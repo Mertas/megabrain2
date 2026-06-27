@@ -1,0 +1,22 @@
+@use '../../../styles/variables' as *;
+
+.hint {
+  padding: 7px 0 20px;
+  font-size: $font-size-sm;
+  color: $color-muted;
+
+  a {
+    color: $color-muted;
+    &:hover { color: $color-primary; }
+  }
+}
+
+.copyright {
+  font-size: $font-size-sm;
+  padding: 0 29px 0 0;
+  color: $color-text-light;
+
+  a {
+    color: $color-text-light;
+  }
+}

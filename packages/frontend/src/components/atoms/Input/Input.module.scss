@@ -1,0 +1,76 @@
+﻿@use '../../../styles/variables' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fullWidth { width: 100%; }
+
+.label {
+  font-size: $font-size-sm;
+  color: $color-text-dark;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid $color-border;
+  background: $color-bg-white;
+  color: $color-text;
+  font-family: $font-family;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: $color-primary;
+    outline: none;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f5f5f5;
+  }
+
+  &.error {
+    border-color: $color-error;
+  }
+}
+
+.sm { padding: 2px 8px; font-size: $font-size-sm; }
+.md { padding: 5px 10px; font-size: $font-size-md; }
+.lg { padding: 8px 14px; font-size: $font-size-lg; }
+
+.icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.iconLeft {
+  left: 8px;
+  & + .input { padding-left: 28px; }
+}
+
+.iconRight {
+  right: 8px;
+  .inputWrapper:has(&) .input { padding-right: 28px; }
+}
+
+.hint {
+  font-size: $font-size-sm;
+  color: $color-muted;
+}
+
+.errorText {
+  font-size: $font-size-sm;
+  color: $color-error;
+}

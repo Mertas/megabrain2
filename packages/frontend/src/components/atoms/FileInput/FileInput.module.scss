@@ -1,0 +1,64 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+@use 'sass:color';
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fullWidth { width: 100%; }
+
+.label {
+  font-size: $font-size-sm;
+  color: $color-text-dark;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.button {
+  display: inline-block;
+  padding: 5px 16px;
+  background: $color-bg-dark;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: $font-size-md;
+  border-radius: 4px;
+
+  &:hover { background: color.adjust($color-bg-dark, $lightness: 10%); }
+}
+
+.input {
+  @include visually-hidden;
+}
+
+.name {
+  font-size: $font-size-sm;
+  color: $color-muted;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &.hasFile {
+    color: $color-text;
+  }
+}
+
+.hint {
+  font-size: $font-size-sm;
+  color: $color-muted;
+}
+
+.errorText {
+  font-size: $font-size-sm;
+  color: $color-error;
+}
+
+.sm .button { padding: 2px 8px; font-size: $font-size-sm; }
+.lg .button { padding: 8px 20px; font-size: $font-size-lg; }

@@ -1,0 +1,33 @@
+@use '../../../styles/variables' as *;
+
+.badge {
+  display: inline;
+  padding: 2px 4px;
+  color: $color-text;
+  border: none;
+  background: transparent;
+  font-family: $font-family;
+  font-size: inherit;
+  cursor: default;
+
+  &::after {
+    content: ', ';
+  }
+
+  &:last-child::after {
+    content: '';
+  }
+}
+
+.clickable {
+  cursor: pointer;
+
+  &:hover {
+    background-color: $color-primary;
+  }
+}
+
+.selected {
+  background-color: $color-accent;
+  color: $color-text-light;
+}

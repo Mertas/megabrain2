@@ -1,0 +1,24 @@
+@use '../../../styles/variables' as *;
+
+.breadcrumbs {
+  background-color: $color-bg-dark;
+  position: relative;
+  left: 241px;
+  width: 686px;
+  padding: 7px 12px;
+  color: $color-text-light;
+  font-size: $font-size-md;
+
+  a {
+    color: $color-text-light;
+  }
+}
+
+.current {
+  font-weight: normal;
+  color: $color-primary;
+}
+
+.sep {
+  color: $color-text-light;
+}

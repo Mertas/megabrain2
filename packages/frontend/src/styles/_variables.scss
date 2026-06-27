@@ -1,0 +1,64 @@
+// ============================================================
+// Megabrain Color Scheme (from legacy style.css)
+// ============================================================
+
+// Backgrounds
+$color-bg:              #D9D7C2;
+$color-bg-dark:         #182C3F;
+$color-bg-light:        #EDEBD2;
+$color-bg-white:        #FFFFFF;
+
+// Primary & Accent
+$color-primary:         #F9A253;   // orange — nav hover, highlights
+$color-accent:          #FF6633;   // red-orange — selected, alerts, active
+
+// Semantic
+$color-success:         #37CE74;   // green — correct answer
+$color-error:           #FF0000;   // red — wrong answer
+$color-muted:           #6E9A90;   // muted green — correct in wrong block
+
+// Text
+$color-text:            #000000;
+$color-text-light:      #FFFFFF;
+$color-text-muted:      #D4D2BC;
+$color-text-dark:       #0E2136;
+
+// Borders
+$color-border:          #C5C9CD;
+$color-border-light:    #FFFFFF;
+
+// ============================================================
+// Typography
+// ============================================================
+
+$font-family:           Verdana, sans-serif;
+$font-size-base:        10px;
+$line-height-base:      1.3333;
+
+$font-size-sm:          10px;
+$font-size-md:          12px;
+$font-size-lg:          17px;
+$font-size-xl:          19px;
+$font-size-2xl:         24px;
+$font-size-3xl:         48px;
+
+// ============================================================
+// Layout
+// ============================================================
+
+$page-width:            990px;
+$content-width:         756px;
+$aside-width:           175px;
+$aside-left:            66px;
+$content-left:          216px;
+$header-height:         108px;
+
+$content-padding-x:     45px;
+$content-padding-y:     20px;
+
+// ============================================================
+// Misc
+// ============================================================
+
+$border-radius:         10px;
+$transition-speed:      0.2s;

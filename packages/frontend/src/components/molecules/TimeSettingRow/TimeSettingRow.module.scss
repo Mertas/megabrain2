@@ -1,0 +1,20 @@
+@use '../../../styles/variables' as *;
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.select {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: auto;
+  vertical-align: middle;
+}
+
+.hint {
+  font-size: 10px;
+}

@@ -1,0 +1,19 @@
+.digit {
+  display: inline-block;
+  vertical-align: top;
+  height: 26px;
+  background: url('/i/digits.png') no-repeat;
+}
+
+.c  { width: 10px; background-position: -22px -14px; }
+.d  { width: 10px; background-position: -44px -14px; }
+.n0 { width: 20px; background-position: -59px -14px; }
+.n1 { width: 13px; background-position: -86px -14px; }
+.n2 { width: 20px; background-position: -108px -14px; }
+.n3 { width: 20px; background-position: -136px -14px; }
+.n4 { width: 20px; background-position: -165px -14px; }
+.n5 { width: 20px; background-position: -194px -14px; }
+.n6 { width: 20px; background-position: -222px -14px; }
+.n7 { width: 20px; background-position: -250px -14px; }
+.n8 { width: 20px; background-position: -279px -14px; }
+.n9 { width: 20px; background-position: -307px -14px; }

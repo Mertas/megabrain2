@@ -1,0 +1,41 @@
+@use '../../../styles/variables' as *;
+
+.question {
+  font-size: 19px;
+  padding: 10px 0;
+  margin-bottom: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  justify-items: center;
+  align-items: center;
+}
+
+.bordered {
+  border: 1px solid $color-border;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.again {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.againBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: $font-family;
+  font-size: 10px;
+  color: $color-text;
+  border-bottom: 1px dotted;
+
+  &:hover {
+    color: $color-primary;
+    border-color: $color-primary;
+  }
+}

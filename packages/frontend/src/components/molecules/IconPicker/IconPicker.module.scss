@@ -1,0 +1,65 @@
+@use '../../../styles/variables' as *;
+
+.picker {
+  display: inline-block;
+  position: relative;
+}
+
+.current {
+  display: inline-block;
+  width: 40px;
+  text-align: center;
+  font-size: 48px;
+  border: 1px solid $color-bg-white;
+  background: $color-bg-white;
+  cursor: pointer;
+  font-family: $font-family;
+  padding: 0;
+
+  &:focus-visible {
+    border-color: $color-primary;
+    outline: none;
+  }
+}
+
+.grid {
+  position: absolute;
+  left: 0;
+  top: 62px;
+  background: $color-bg-white;
+  border: 1px dotted;
+  display: flex;
+  flex-wrap: wrap;
+  z-index: 10;
+  max-width: 612px;
+}
+
+.option {
+  display: inline-block;
+  width: 40px;
+  text-align: center;
+  font-size: 48px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: $font-family;
+  padding: 0;
+
+  &:hover {
+    background: $color-primary;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: -2px;
+  }
+}
+
+.selected {
+  background: $color-accent;
+  color: $color-text-light;
+
+  &:hover {
+    background: $color-accent;
+  }
+}

@@ -1,0 +1,16 @@
+@use '../../../styles/variables' as *;
+
+.logoBtn {
+  display: block;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 321px;
+  height: 85px;
+  background: url('/i/logo.png') no-repeat 0 0;
+  text-indent: -9999px;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}

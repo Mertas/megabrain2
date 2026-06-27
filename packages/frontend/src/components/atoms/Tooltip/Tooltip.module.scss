@@ -1,0 +1,29 @@
+@use '../../../styles/variables' as *;
+
+.wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.fullWidth {
+  display: flex;
+  width: 100%;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, top 0.2s ease, left 0.2s ease;
+  font-size: $font-size-sm;
+  padding: 4px 8px;
+  background: $color-bg-dark;
+  color: $color-text-light;
+  white-space: nowrap;
+  border-radius: 4px;
+
+  &.visible {
+    opacity: 1;
+  }
+}

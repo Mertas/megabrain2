@@ -1,0 +1,52 @@
+@use '../../../styles/variables' as *;
+
+.profile {
+  display: flex;
+  gap: 4%;
+}
+
+.left {
+  width: 48%;
+}
+
+.right {
+  width: 48%;
+  padding-top: 60px;
+}
+
+.iconRow {
+  margin-bottom: 20px;
+}
+
+.iconStatic {
+  font-size: 48px;
+}
+
+.level {
+  font-size: 24px;
+}
+
+.nickname {
+  display: inline;
+  margin-left: 8px;
+  font-size: 24px;
+}
+
+.name {
+  font-size: 19px;
+  margin: 0 0 20px;
+}
+
+.editRow {
+  margin: 0 0 20px;
+}
+
+.location {
+  margin: 0 0 12px;
+  font-size: 12px;
+}
+
+.firstSeen {
+  font-size: 12px;
+  color: #666;
+}

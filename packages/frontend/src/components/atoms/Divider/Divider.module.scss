@@ -1,0 +1,29 @@
+@use '../../../styles/variables' as *;
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.line {
+  flex: 1;
+  border: none;
+  height: 0;
+  margin: 0;
+}
+
+.solid  { border-top: 1px solid $color-border; }
+.dashed { border-top: 1px dashed $color-border; }
+.dotted { border-top: 1px dotted $color-border; }
+
+.label {
+  padding: 0 12px;
+  font-size: $font-size-sm;
+  color: $color-muted;
+  white-space: nowrap;
+}
+
+.spacingSm { margin: 8px 0; }
+.spacingMd { margin: 16px 0; }
+.spacingLg { margin: 24px 0; }

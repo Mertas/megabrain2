@@ -1,0 +1,9 @@
+{
+  "port": 6006,
+  "staticPath": "public",
+  "watchDirs": ["src"],
+  "plugins": ["react-cosmos-plugin-vite"],
+  "vite": {
+    "configPath": "./vite.config.ts"
+  }
+}

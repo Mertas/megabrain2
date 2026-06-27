@@ -1,0 +1,57 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: $font-family;
+}
+
+.sm { font-size: $font-size-sm; }
+.md { font-size: $font-size-md; }
+
+.input {
+  @include visually-hidden;
+}
+
+.circle {
+  width: 18px;
+  height: 18px;
+  border: 2px solid $color-border;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color $transition-speed;
+}
+
+.input:checked + .circle {
+  border-color: $color-accent;
+  &::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: $color-accent;
+    border-radius: 50%;
+  }
+}
+
+.input:focus-visible + .circle {
+  outline: 2px solid $color-primary;
+  outline-offset: 2px;
+}
+
+.input:disabled + .circle {
+  opacity: 0.4;
+}
+
+.input:disabled ~ .label {
+  opacity: 0.5;
+}
+
+.label {
+  user-select: none;
+}

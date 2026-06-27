@@ -1,0 +1,21 @@
+@use '../../../styles/variables' as *;
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: $font-size-sm;
+  line-height: 1.4;
+  border-radius: 3px;
+}
+
+.pill {
+  border-radius: 999px;
+}
+
+.success { background: $color-success; color: #fff; }
+.error   { background: $color-error;   color: #fff; }
+.warning { background: $color-primary; color: #000; }
+.info    { background: $color-bg-dark; color: $color-primary; }
+.muted   { background: $color-muted;   color: #fff; }
+
+.sm { padding: 1px 6px; font-size: 8px; }

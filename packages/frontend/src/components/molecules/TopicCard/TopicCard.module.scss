@@ -1,0 +1,96 @@
+@use '../../../styles/variables' as *;
+
+.topic {
+  margin-bottom: 4px;
+
+  h3 {
+    font-weight: normal;
+    font-size: 19px;
+    padding: 0;
+    margin: 0 0 4px;
+  }
+}
+
+.topicLink {
+  font-family: $font-family;
+  font-size: inherit;
+  color: $color-text;
+  padding: 0 2px;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $color-primary;
+  }
+}
+
+.selectAll {
+  font-size: 10px;
+  margin-bottom: 5px;
+}
+
+.selectAllBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: $font-family;
+  font-size: inherit;
+  color: $color-accent;
+  border-bottom: 1px dotted $color-accent;
+  padding: 0;
+}
+
+.subtopics {
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+// profile mode
+.profileRow {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.toggle {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: $font-family;
+  font-size: inherit;
+  color: $color-text;
+  padding: 0;
+  text-decoration: none;
+}
+
+.profileName {
+  font-size: 19px;
+  color: $color-text;
+  padding: 2px;
+  text-decoration: none;
+
+  &.active {
+    color: $color-primary;
+  }
+}
+
+.colon {
+  display: none;
+}
+
+.active .colon {
+  display: inline;
+}
+
+.profileSubtopics {
+  font-size: 10px;
+}
+
+.profileSubtopic {
+  color: $color-text;
+  padding: 2px;
+  text-decoration: none;
+
+  &:hover {
+    background-color: $color-primary;
+  }
+}

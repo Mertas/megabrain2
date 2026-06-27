@@ -1,0 +1,20 @@
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
+
+.clickable {
+  cursor: pointer;
+  &:hover { opacity: 0.8; }
+}
+
+.sm  { font-size: 8px; }
+.md  { font-size: 12px; }
+.lg  { font-size: 19px; }
+.xl  { font-size: 24px; }
+.inheritSize { font-size: inherit; }

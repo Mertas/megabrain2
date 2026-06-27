@@ -1,0 +1,41 @@
+@use '../../../styles/variables' as *;
+
+.labels {
+  padding: 15px 0 10px;
+  line-height: 2;
+  font-size: 12px;
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: $font-family;
+  font-size: inherit;
+  color: $color-text;
+  padding: 0;
+
+  span:last-child {
+    border-bottom: 1px dotted;
+  }
+
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+.active {
+  padding: 5px;
+  background-color: $color-accent;
+  color: $color-text-light;
+
+  span:last-child {
+    border-bottom: none;
+  }
+}
+
+.content {
+  padding-bottom: 10px;
+}

@@ -1,0 +1,278 @@
+// ============================================================
+// Megabrain Global Styles
+// ============================================================
+
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'reset';
+
+// ============================================================
+// Utility classes
+// ============================================================
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+.clear {
+  @include clearfix;
+  font-size: 1px;
+  height: 0;
+  overflow: hidden;
+}
+
+.hidden {
+  display: none !important;
+}
+
+// ============================================================
+// Layout (legacy BEM naming preserved, will migrate gradually)
+// ============================================================
+
+.l-page {
+  width: $page-width;
+  margin: 0 auto;
+  position: relative;
+  font-size: 12px;
+}
+
+.l-header {
+  height: $header-height;
+  position: relative;
+}
+
+.l-content {
+  width: $content-width;
+  position: relative;
+  left: $content-left;
+  background: $color-bg-white;
+  z-index: 1;
+
+  &::before {
+    content: '';
+    display: block;
+    height: 8px;
+    background: url('/i/content_bg_top.jpg') repeat-x 0 0;
+  }
+}
+
+.l-i-content {
+  background: url('/i/content_bg_bottom.jpg') repeat-x 0 100%;
+  padding: $content-padding-y $content-padding-x 50px;
+  min-height: calc(100vh - 161px);
+}
+
+.l-aside {
+  position: absolute;
+  left: $aside-left;
+  top: 184px;
+  width: $aside-width;
+  z-index: 2;
+}
+
+// ============================================================
+// Header
+// ============================================================
+
+.b-logo {
+  display: block;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 321px;
+  height: 85px;
+  background: url('/i/logo.png') no-repeat 0 0;
+  text-indent: -9999px;
+  overflow: hidden;
+}
+
+.b-user-auth {
+  display: block;
+  position: absolute;
+  bottom: 5px;
+  left: 768px;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+
+  a {
+    color: $color-text-muted;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// ============================================================
+// Breadcrumbs
+// ============================================================
+
+.b-breadcrumbs {
+  background-color: $color-bg-dark;
+  position: relative;
+  left: 241px;
+  width: 686px;
+  padding: 7px 12px;
+  color: $color-text-light;
+
+  a {
+    color: $color-text-light;
+  }
+
+  strong {
+    font-weight: normal;
+    color: $color-primary;
+  }
+}
+
+// ============================================================
+// Navigation
+// ============================================================
+
+.b-nav {
+  display: block;
+  list-style-type: none;
+  margin: 0 0 24px;
+  padding: 0;
+
+  li {
+    display: block;
+    margin: 0 0 4px;
+    padding: 0;
+    font-size: $font-size-2xl;
+
+    a {
+      background-color: $color-bg-light;
+      display: block;
+      width: 150px;
+      padding: 5px 12px 4px;
+      border-top: 1px solid $color-border-light;
+      border-right: 4px solid $color-primary;
+      color: $color-text-dark;
+      text-decoration: none;
+
+      &:hover {
+        background-color: $color-primary;
+      }
+
+      span {
+        text-decoration: underline;
+        font-size: 16px;
+        position: relative;
+        top: -2px;
+        margin: 0 0 0 3px;
+      }
+    }
+  }
+
+  .b-nav--active a {
+    width: 175px;
+    color: $color-text-light;
+    border-right: none;
+    background-color: $color-primary;
+  }
+}
+
+// ============================================================
+// Copyrights
+// ============================================================
+
+.b-copyrights {
+  font-size: $font-size-sm;
+  padding: 0 29px 0 0;
+  color: $color-text-light;
+
+  a {
+    color: $color-text-light;
+  }
+}
+
+// ============================================================
+// Game elements
+// ============================================================
+
+.b-game-current-result {
+  color: $color-accent;
+  font-size: $font-size-sm;
+  margin: 0 0 12px;
+}
+
+.b-game-question-about-pic {
+  float: left;
+  margin: 0 10px 12px 0;
+
+  img {
+    display: block;
+    max-width: 250px;
+  }
+}
+
+.b-game-question {
+  font-size: $font-size-xl;
+  padding: 10px 0 0 0;
+  margin: 0 0 12px;
+  overflow: hidden;
+}
+
+.b-game-answers {
+  border: 1px solid $color-border;
+  padding: 16px;
+  margin: 0 0 20px;
+}
+
+.b-game-answers-holder {
+  // flex/grid layout in modern version
+}
+
+.b-game-sudden-quit {
+  margin: 0 0 20px;
+  float: right;
+
+  a {
+    color: $color-error;
+    text-decoration: none;
+    font-size: 22px;
+    padding: 0 3px 0;
+
+    span {
+      border-bottom: 1px dotted;
+      font-size: 6px;
+      margin: 0 0 0 7px;
+      position: relative;
+      top: -4px;
+    }
+  }
+}
+
+.b-game-skip-question {
+  float: right;
+}
+
+// ============================================================
+// Topics
+// ============================================================
+
+.b-topics-list {
+  position: relative;
+}
+
+.b-topic {
+  width: 32%;
+  float: left;
+  margin-right: 1%;
+  margin-bottom: 24px;
+
+  h3 {
+    a {
+      text-decoration: none;
+      padding: 0 2px;
+      margin: 0 -2px;
+
+      &:hover {
+        background-color: $color-primary;
+      }
+    }
+  }
+}
+

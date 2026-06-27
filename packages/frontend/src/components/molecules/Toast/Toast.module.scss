@@ -1,0 +1,61 @@
+@use '../../../styles/variables' as *;
+
+.toast {
+  position: relative;
+  background: $color-bg-white;
+  text-align: center;
+  color: $color-text;
+  border-radius: 10px;
+  box-shadow: 3px 3px 8px #111;
+  pointer-events: auto;
+}
+
+.text {
+  font-size: 19px;
+  padding: 10px 40px 10px 20px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: $color-text;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+
+  &:hover {
+    opacity: 0.5;
+  }
+}
+
+.correct {
+  border: 5px solid $color-success;
+  min-width: 100px;
+  width: auto;
+}
+
+.wrong {
+  border: 5px solid $color-error;
+  min-width: 100px;
+  width: auto;
+}
+
+.info {
+  border: 3px solid $color-primary;
+  min-width: 200px;
+  max-width: 600px;
+  width: auto;
+}

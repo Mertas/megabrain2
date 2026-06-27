@@ -1,0 +1,36 @@
+@use '../../../styles/variables' as *;
+
+.navBtn {
+  display: block;
+  width: 150px;
+  padding: 5px 12px 4px;
+  border: none;
+  border-top: 1px solid $color-border-light;
+  border-right: 4px solid $color-primary;
+  background-color: $color-bg-light;
+  color: $color-text-dark;
+  text-decoration: none;
+  font-family: $font-family;
+  font-size: $font-size-2xl;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    background-color: $color-primary;
+  }
+
+  span {
+    text-decoration: underline;
+    font-size: 16px;
+    position: relative;
+    top: -2px;
+    margin: 0 0 0 3px;
+  }
+}
+
+:global(.b-nav--active) .navBtn {
+  width: 175px;
+  color: $color-text-light;
+  border-right: none;
+  background-color: $color-primary;
+}

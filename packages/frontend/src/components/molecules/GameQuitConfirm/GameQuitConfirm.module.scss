@@ -1,0 +1,51 @@
+@use '../../../styles/variables' as *;
+
+.quit {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.trigger {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: $color-error;
+  font-size: 22px;
+  padding: 0 3px;
+  font-family: $font-family;
+
+  span:last-child {
+    border-bottom: 1px dotted;
+    font-size: 10px;
+    margin-left: 7px;
+    position: relative;
+    top: -5px;
+  }
+}
+
+.confirm {
+  border: 1px dotted $color-error;
+  padding: 5px;
+}
+
+.submit {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: $color-error;
+  display: block;
+  margin-bottom: 5px;
+  font-family: $font-family;
+  font-size: 12px;
+}
+
+.cancel {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: $color-text;
+  border-bottom: 1px dotted;
+  font-family: $font-family;
+  font-size: 12px;
+}

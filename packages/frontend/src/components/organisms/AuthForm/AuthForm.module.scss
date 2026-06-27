@@ -1,0 +1,77 @@
+@use '../../../styles/variables' as *;
+
+.page {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.card {
+  width: 420px;
+  padding: 32px;
+  border: 1px solid $color-border;
+  border-radius: 10px;
+  background: $color-bg-white;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 24px;
+  margin: 0 0 16px;
+  text-align: center;
+  color: $color-text-dark;
+}
+
+.desc {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.error {
+  color: $color-error;
+  font-size: 12px;
+  text-align: center;
+  padding: 8px;
+  background: rgba(255, 0, 0, 0.05);
+  border: 1px solid $color-error;
+  border-radius: 4px;
+}
+
+.switch {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.strength {
+  margin-top: 8px;
+}
+
+.strengthBar {
+  display: flex;
+  gap: 3px;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.strengthSeg {
+  flex: 1;
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+
+.strengthLabel {
+  font-size: 10px;
+  margin-top: 3px;
+  display: block;
+}

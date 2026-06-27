@@ -1,0 +1,32 @@
+.container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 12px;
+  pointer-events: none;
+}
+
+.item {
+  max-height: 200px;
+  opacity: 1;
+  padding: 4px 0;
+  transition: max-height 0.35s ease, opacity 0.35s ease, padding 0.35s ease;
+}
+
+.itemEntering {
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+}
+
+.itemExiting {
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+}
