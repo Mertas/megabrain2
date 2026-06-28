@@ -1,6 +1,6 @@
 import { io, type Socket } from 'socket.io-client'
 
-const SOCKET_URL = 'http://localhost:3001'
+const SOCKET_URL = window.location.origin
 const PATH = '/pvp-socket'
 
 let socket: Socket | null = null

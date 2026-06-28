@@ -14,7 +14,7 @@ interface AuthSocket extends Socket {
 
 export function createPvPServer(httpServer: HttpServer): SocketServer {
   const io = new SocketServer(httpServer, {
-    cors: { origin: ['http://localhost:5173', 'http://localhost:6006'], credentials: true },
+    cors: { origin: true, credentials: true },
     path: '/pvp-socket',
   })
 

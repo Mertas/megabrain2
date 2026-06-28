@@ -79,7 +79,7 @@ export function AddQuestions({ categories: initialCats }: AddQuestionsProps) {
     setError('')
 
     try {
-      const res = await fetch('http://localhost:3001/api/topics/questions/bulk', {
+      const res = await fetch('/api/topics/questions/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
         body: JSON.stringify({ topicId: Number(selectedTopic), questions: parsed }),
