@@ -1,4 +1,5 @@
 @use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
 
 .question {
   font-size: 19px;
@@ -37,5 +38,19 @@
   &:hover {
     color: $color-primary;
     border-color: $color-primary;
+  }
+}
+
+@include mobile {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .question {
+    font-size: 16px;
+  }
+
+  .againBtn {
+    font-size: 13px;
   }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { SearchForm } from '../../molecules/SearchForm/SearchForm'
 import { TopicCard, type Topic } from '../../molecules/TopicCard/TopicCard'
 import styles from './TopicList.module.scss'
@@ -15,6 +15,17 @@ export interface TopicListProps {
 
 export function TopicList({ topics, selectedIds, mode = 'select', onSelectSubtopic, onSelectAll, onClose, totalQuestions }: TopicListProps) {
   const [limits, setLimits] = useState<Record<number, number>>({})
+  const [search, setSearch] = useState('')
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return topics
+    const q = search.toLowerCase()
+    return topics.filter(
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        t.subtopics.some((s) => s.name.toLowerCase().includes(q)),
+    )
+  }, [topics, search])
 
   const handleShowAll = (topicId: number) => {
     const topic = topics.find((t) => t.id === topicId)
@@ -22,7 +33,7 @@ export function TopicList({ topics, selectedIds, mode = 'select', onSelectSubtop
   }
 
   return (
-    <div className={mode === 'modal' ? 'b-topics_list' : ''}>
+    <div>
       {mode === 'modal' && onClose && (
         <button
           type="button"
@@ -32,9 +43,9 @@ export function TopicList({ topics, selectedIds, mode = 'select', onSelectSubtop
           {'\u2716'} закрыть
         </button>
       )}
-      <SearchForm />
+      <SearchForm value={search} onChange={setSearch} />
       <div className={styles.grid}>
-        {topics.map((topic) => (
+        {filtered.map((topic) => (
           <TopicCard
             key={topic.id}
             topic={topic}

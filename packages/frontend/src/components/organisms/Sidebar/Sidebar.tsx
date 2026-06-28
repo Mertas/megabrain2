@@ -1,31 +1,59 @@
-import { navItems } from '../../../lib/navItems'
+import { useMemo, useCallback } from 'react'
+import { useNavigate } from '@tanstack/react-router'
+import { navItems, type NavKey } from '../../../lib/navItems'
+import { notifyUrlChange } from '../../../lib/navigation'
 import styles from './Sidebar.module.scss'
 
 const navRouteMap: Record<string, string> = {
-  game: 'setup',
-  pvp: 'setup',
-  questions: 'add-questions',
-  people: 'setup',
-  ratings: 'setup',
+  game: '/',
+  pvp: '/pvp',
+  questions: '/questions/add',
+  people: '/users',
+  ratings: '/ratings',
+  admin: '/admin',
 }
+
+const publicKeys: NavKey[] = ['game', 'people', 'ratings']
+const loggedInKeys: NavKey[] = ['game', 'pvp', 'questions', 'people', 'ratings']
+const adminKeys: NavKey[] = ['game', 'pvp', 'questions', 'people', 'ratings', 'admin']
 
 export interface SidebarProps {
   activeNav: string
-  onNavigate?: (step: string) => void
+  isOpen?: boolean
+  onClose?: () => void
+  isLoggedIn?: boolean
+  isAdmin?: boolean
 }
 
-export function Sidebar({ activeNav, onNavigate }: SidebarProps) {
+export function Sidebar({ activeNav, isOpen, onClose, isLoggedIn = false, isAdmin = false }: SidebarProps) {
+  const navigate = useNavigate()
+
+  const items = useMemo(() => {
+    const keys = isAdmin ? adminKeys : isLoggedIn ? loggedInKeys : publicKeys
+    return navItems.filter((item) => keys.includes(item.key))
+  }, [isLoggedIn, isAdmin])
+
+  const handleClick = useCallback((href: string) => {
+    navigate({ to: href as any })
+    notifyUrlChange()
+    onClose?.()
+  }, [navigate, onClose])
+
   return (
-    <div className="l-aside">
+    <div className={`l-aside${isOpen ? ' is-open' : ''}`}>
+      <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть меню">
+        &times;
+      </button>
       <ul className="b-nav">
-        {navItems.map((item) => (
+        {items.map((item) => (
           <li key={item.key} className={activeNav === item.key ? 'b-nav--active' : ''}>
-            <button
-              className={styles.navBtn}
-              onClick={() => onNavigate?.(navRouteMap[item.key] || 'setup')}
+            <a
+              className={styles.navLink}
+              href={item.href}
+              onClick={(e) => { e.preventDefault(); handleClick(navRouteMap[item.key] || '/') }}
             >
               {item.icon}<span>{item.label}</span>
-            </button>
+            </a>
           </li>
         ))}
       </ul>

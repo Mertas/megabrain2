@@ -11,7 +11,7 @@ export interface TabsProps {
   items: TabItem[]
   activeKey: string
   onChange: (key: string) => void
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export function Tabs({ items, activeKey, onChange, children }: TabsProps) {

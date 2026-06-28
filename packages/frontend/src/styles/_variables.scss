@@ -43,6 +43,14 @@ $font-size-2xl:         24px;
 $font-size-3xl:         48px;
 
 // ============================================================
+// Breakpoints
+// ============================================================
+
+$bp-mobile:             767px;
+$bp-tablet:             1023px;
+$bp-desktop:            1024px;
+
+// ============================================================
 // Layout
 // ============================================================
 
@@ -52,9 +60,11 @@ $aside-width:           175px;
 $aside-left:            66px;
 $content-left:          216px;
 $header-height:         108px;
+$header-height-mobile:  56px;
 
 $content-padding-x:     45px;
 $content-padding-y:     20px;
+$content-padding-mobile: 16px;
 
 // ============================================================
 // Misc

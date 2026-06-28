@@ -1,0 +1,45 @@
+import { createRoute } from '@tanstack/react-router'
+import { AddQuestions } from '../components/organisms/AddQuestions/AddQuestions'
+import { AdminPage } from '../components/organisms/AdminPage/AdminPage'
+import { PvP, PvPRatings } from '../components/organisms/PvP/PvP'
+import { useAuth } from '../context/auth'
+import { rootRoute, PageWrap } from './base'
+
+export const addQRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/questions/add',
+  component: function AddQPage() {
+    const auth = useAuth()
+    return (
+      <PageWrap activeNav="questions" breadcrumbs={[{ label: 'Вопросы' }, { label: 'Добавить' }]}>
+        <AddQuestions categories={auth.categories} topics={auth.topics} />
+      </PageWrap>
+    )
+  },
+})
+
+export const adminRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin',
+  component: function AdminPageRoute() {
+    const auth = useAuth()
+    if (!auth.isAdmin) return <PageWrap activeNav="admin" breadcrumbs={[{ label: 'Доступ запрещён' }]}><div style={{ textAlign: 'center', padding: 60 }}>Требуются права администратора</div></PageWrap>
+    return <PageWrap activeNav="admin" breadcrumbs={[{ label: 'Админка' }]}><AdminPage /></PageWrap>
+  },
+})
+
+export const pvpRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/pvp',
+  component: function PvPPage() {
+    return <PageWrap activeNav="pvp" breadcrumbs={[{ label: 'PvP' }]}><PvP /></PageWrap>
+  },
+})
+
+export const ratingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/ratings',
+  component: function RatingsPage() {
+    return <PageWrap activeNav="ratings" breadcrumbs={[{ label: 'Рейтинг' }]}><PvPRatings /></PageWrap>
+  },
+})

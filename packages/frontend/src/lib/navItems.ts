@@ -1,4 +1,4 @@
-export type NavKey = 'game' | 'pvp' | 'questions' | 'people' | 'ratings'
+export type NavKey = 'game' | 'pvp' | 'questions' | 'people' | 'ratings' | 'admin'
 
 export interface NavItem {
   key: NavKey
@@ -13,4 +13,5 @@ export const navItems: NavItem[] = [
   { key: 'questions', icon: '\u2692', label: 'Вопросы', href: '/questions/add' },
   { key: 'people', icon: '\u262D', label: 'Люди', href: '/users' },
   { key: 'ratings', icon: '\u2721', label: 'Рейтинги', href: '/ratings' },
+  { key: 'admin', icon: '\u2699', label: 'Админка', href: '/admin' },
 ]

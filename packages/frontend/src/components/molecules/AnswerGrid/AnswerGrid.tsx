@@ -45,6 +45,8 @@ export function AnswerGrid({ answers, question, bordered = true, onAnswer, stand
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (processingRef.current || phase !== 'idle') return
+      const target = e.target as HTMLElement
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return
       const idx = parseInt(e.key)
       if (idx >= 1 && idx <= 4 && idx <= answers.length) {
         handleClick(idx - 1)

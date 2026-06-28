@@ -4,6 +4,7 @@ import styles from './GameResults.module.scss'
 
 export interface GameResultsProps {
   result: GameResult
+  score?: { totalAwarded: number; breakdown: { questionId: number; points: number }[] }
 }
 
 const headers = [
@@ -14,7 +15,7 @@ const headers = [
   'Попробуйте ещё раз!',
 ]
 
-export function GameResults({ result }: GameResultsProps) {
+export function GameResults({ result, score }: GameResultsProps) {
   const accuracy = result.total > 0 ? Math.round((result.correct / result.total) * 100) : 0
   const header = accuracy >= 80 ? headers[0] : accuracy >= 60 ? headers[1] : accuracy >= 40 ? headers[2] : headers[3]
   const avgSec = result.total > 0 ? (result.timeCs / result.total / 100).toFixed(0) : '0'
@@ -37,6 +38,12 @@ export function GameResults({ result }: GameResultsProps) {
           <>На&nbsp;<span className={styles.missed}>{missed}&nbsp;вопроса</span> вы ответить не успели.<br /></>
         )}
         <span className={styles.avgTime}>Среднее время на ответ — {avgSec} секунд.</span>
+        {score !== undefined && (
+          <>
+            <br />
+            <span className={styles.scoreLine}>Заработано очков: <strong>{score.totalAwarded}</strong></span>
+          </>
+        )}
       </div>
 
       {result.questions.map((item, i) => (
@@ -49,6 +56,7 @@ export function GameResults({ result }: GameResultsProps) {
           correctIndex={item.correctIndex}
           selectedIndex={item.selectedIndex}
           note={item.question.note}
+          points={score?.breakdown[i]?.points}
         />
       ))}
     </div>

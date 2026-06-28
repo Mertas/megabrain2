@@ -2,6 +2,33 @@
 // Mixins
 // ============================================================
 
+@use 'variables' as *;
+
+// Responsive breakpoints (mobile-first: overrides apply at/below breakpoint)
+@mixin mobile {
+  @media (max-width: $bp-mobile) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: $bp-mobile + 1) and (max-width: $bp-tablet) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: $bp-desktop) {
+    @content;
+  }
+}
+
+@mixin not-desktop {
+  @media (max-width: $bp-tablet) {
+    @content;
+  }
+}
+
 @mixin clearfix {
   &::after {
     content: '';

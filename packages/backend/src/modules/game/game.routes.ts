@@ -5,9 +5,11 @@ import { db } from '../../db/connection.js'
 export const gameRouter = Router()
 
 gameRouter.post('/check-answer', authenticate, (req, res) => {
-  const { questionId, answer } = req.body as {
+  const { questionId, answer, timeElapsedCs, timeLimitSeconds } = req.body as {
     questionId: number
     answer: string
+    timeElapsedCs?: number
+    timeLimitSeconds?: number
   }
 
   if (questionId == null || !answer) {
@@ -22,6 +24,21 @@ gameRouter.post('/check-answer', authenticate, (req, res) => {
   if (!q) {
     res.status(404).json({ error: 'NOT_FOUND', message: 'Вопрос не найден' })
     return
+  }
+
+  // Time limit enforcement
+  if (typeof timeElapsedCs === 'number' && typeof timeLimitSeconds === 'number' && timeLimitSeconds > 0) {
+    const limitCs = timeLimitSeconds * 100
+    if (timeElapsedCs > limitCs) {
+      res.json({
+        correct: false,
+        timeExpired: true,
+        correctAnswer: '',
+        explanation: null,
+        message: 'Время вышло',
+      })
+      return
+    }
   }
 
   const answers = [q.answer_1, q.answer_2, q.answer_3, q.answer_4]
@@ -40,4 +57,81 @@ gameRouter.post('/check-answer', authenticate, (req, res) => {
     explanation: q.explanation,
     message: correct ? 'Правильно!' : 'Неправильно',
   })
+})
+
+gameRouter.get('/config', authenticate, (req, res) => {
+  const row = db.prepare('SELECT last_game_config FROM users WHERE id = ?').get(req.userId) as { last_game_config: string | null } | undefined
+  if (row?.last_game_config) {
+    try { res.json(JSON.parse(row.last_game_config)) } catch { res.json(null) }
+  } else {
+    res.json(null)
+  }
+})
+
+gameRouter.post('/config', authenticate, (req, res) => {
+  const config = req.body
+  db.prepare('UPDATE users SET last_game_config = ? WHERE id = ?').run(JSON.stringify(config), req.userId)
+  res.json({ ok: true })
+})
+
+gameRouter.post('/submit-result', authenticate, (req, res) => {
+  const { timeMode, timeSeconds, total, correct, questions } = req.body as {
+    timeMode: 'per_question' | 'per_game'
+    timeSeconds: number
+    total: number
+    correct: number
+    questions: { questionId: number; correct: boolean; timeElapsedCs: number }[]
+  }
+
+  if (!questions || !Array.isArray(questions)) {
+    res.status(400).json({ error: 'INVALID', message: 'Нужен массив questions' })
+    return
+  }
+
+  const breakdown: { questionId: number; points: number }[] = []
+  let totalAwarded = 0
+
+  for (const q of questions) {
+    let points = 0
+    if (q.correct) {
+      if (timeSeconds > 0) {
+        const L = timeMode === 'per_game'
+          ? timeSeconds * 100 / questions.length
+          : timeSeconds * 100
+        if (L > 0) {
+          points = 10 * Math.pow(0.1, q.timeElapsedCs / L)
+        } else {
+          points = 10
+        }
+      } else {
+        points = 1
+      }
+    }
+    points = Math.round(points * 100) / 100
+    totalAwarded += points
+    breakdown.push({ questionId: q.questionId, points })
+  }
+
+  const totalRounded = Math.round(totalAwarded * 100) / 100
+
+  // Update user score
+  db.prepare('UPDATE users SET score = score + ? WHERE id = ?').run(Math.round(totalRounded), req.userId)
+
+  // Save game result
+  const result = db.prepare(
+    'INSERT INTO game_results (user_id, total, correct, time_cs, score_awarded) VALUES (?, ?, ?, ?, ?)',
+  ).run(req.userId, total, correct, 0, totalRounded)
+  const gameResultId = result.lastInsertRowid as number
+
+  // Save per-question results
+  const insertQ = db.prepare(
+    'INSERT INTO game_result_questions (game_result_id, question_id, correct, time_elapsed_cs, points) VALUES (?, ?, ?, ?, ?)',
+  )
+  for (let i = 0; i < questions.length; i++) {
+    insertQ.run(gameResultId, questions[i].questionId, questions[i].correct ? 1 : 0, questions[i].timeElapsedCs, breakdown[i].points)
+  }
+
+  const newScore = (db.prepare('SELECT score FROM users WHERE id = ?').get(req.userId) as { score: number }).score
+
+  res.json({ totalAwarded: totalRounded, breakdown, score: newScore })
 })

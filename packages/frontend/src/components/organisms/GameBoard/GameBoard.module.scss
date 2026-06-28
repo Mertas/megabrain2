@@ -1,4 +1,5 @@
 @use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
 
 .quitRow {
   overflow: hidden;
@@ -36,4 +37,28 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 8px;
+}
+
+@include mobile {
+  .timerRow {
+    height: auto;
+    margin-bottom: 8px;
+  }
+
+  .image {
+    float: none;
+    margin: 0 0 12px;
+
+    img {
+      max-width: 100%;
+    }
+  }
+
+  .question {
+    font-size: 16px;
+  }
+
+  .skipRow {
+    justify-content: center;
+  }
 }

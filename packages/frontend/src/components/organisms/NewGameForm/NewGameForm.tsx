@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { TopicList } from '../TopicList/TopicList'
 import { TimeSettingRow } from '../../molecules/TimeSettingRow/TimeSettingRow'
 import { TimeEstimator } from '../../molecules/TimeEstimator/TimeEstimator'
@@ -7,7 +7,8 @@ import { Select } from '../../atoms/Select/Select'
 import { Button } from '../../atoms/Button/Button'
 import { Divider } from '../../atoms/Divider/Divider'
 import type { Topic } from '../../molecules/TopicCard/TopicCard'
-import type { ApiCategory } from '../../../lib/api'
+import type { ApiCategory, SavedGameConfig } from '../../../lib/api'
+import styles from './NewGameForm.module.scss'
 
 export interface GameConfig {
   subtopicIds: number[]
@@ -19,6 +20,7 @@ export interface GameConfig {
 
 export interface NewGameFormProps {
   categories: ApiCategory[]
+  lastConfig: SavedGameConfig | null
   onStart: (config: GameConfig) => void
 }
 
@@ -46,22 +48,46 @@ const qtyOptions = [
   { value: '0', label: 'все вопросы' },
 ]
 
-export function NewGameForm({ categories, onStart }: NewGameFormProps) {
+export function NewGameForm({ categories, lastConfig, onStart }: NewGameFormProps) {
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [timeMode, setTimeMode] = useState<'per_question' | 'per_game'>('per_question')
   const [timeValue, setTimeValue] = useState('60')
   const [questionCount, setQuestionCount] = useState('10')
   const [onlyNew, setOnlyNew] = useState(false)
+  const initialized = useRef(false)
 
-  // Convert categories to Topic[] format
-  const topics: Topic[] = categories.map((cat) => ({
+  useEffect(() => {
+    if (!lastConfig || initialized.current) return
+    initialized.current = true
+
+    // Restore selected topics (only those that still exist)
+    const currentTopicIds = new Set(categories.flatMap((c) => c.topics.map((t) => t.id)))
+    const validIds = lastConfig.subtopicIds.filter((id) => currentTopicIds.has(id))
+    if (validIds.length > 0) setSelectedIds(validIds)
+
+    setTimeMode(lastConfig.timeMode)
+    setTimeValue(lastConfig.timeValue)
+    setQuestionCount(lastConfig.questionCount)
+    setOnlyNew(lastConfig.onlyNew)
+  }, [lastConfig, categories])
+
+  const topics: Topic[] = useMemo(() => categories.map((cat) => ({
     id: cat.id,
     name: cat.name,
     icon: cat.icon,
     subtopics: cat.topics.map((t) => ({ id: t.id, name: t.name })),
-  }))
+  })), [categories])
 
-  const totalQ = topics.reduce((sum, t) => sum + t.subtopics.length * (t.subtopics[0] ? 20 : 0), 0)
+  const totalQ = useMemo(
+    () => categories.reduce((sum, cat) => sum + cat.topics.reduce((s, t) => s + t.question_count, 0), 0),
+    [categories],
+  )
+
+  const selectedQ = useMemo(() => {
+    if (selectedIds.length === 0) return 0
+    return categories.reduce((sum, cat) =>
+      sum + cat.topics.filter((t) => selectedIds.includes(t.id)).reduce((s, t) => s + t.question_count, 0), 0)
+  }, [categories, selectedIds])
 
   const handleSelectAll = (topicId: number) => {
     const topic = topics.find((t) => t.id === topicId)!
@@ -82,10 +108,11 @@ export function NewGameForm({ categories, onStart }: NewGameFormProps) {
   }
 
   const canStart = selectedIds.length > 0
+  const qtyForEstimate = parseInt(questionCount) || selectedQ
 
   return (
     <div>
-      <h1>Начать игру</h1>
+      <h1 className={styles.title}>Новая игра</h1>
 
       <TopicList
         topics={topics}
@@ -95,47 +122,61 @@ export function NewGameForm({ categories, onStart }: NewGameFormProps) {
         totalQuestions={totalQ}
       />
 
-      <div style={{ display: 'flex', gap: '2%', marginBottom: 24 }}>
-        <div style={{ width: '60%' }}>
-          <TimeSettingRow
-            name="timing"
-            label="на вопрос"
-            hint={parseInt(timeValue) > 0
-              ? <span>(<TimeEstimator mode="per_question" timeSeconds={parseInt(timeValue)} totalItems={parseInt(questionCount) || 20} />)</span>
-              : <span>(—)</span>
-            }
-            options={timePerQ}
-            defaultChecked={timeMode === 'per_question'}
-            value={timeValue}
-            onTimeChange={(v) => { setTimeMode('per_question'); setTimeValue(v) }}
-          />
-          <div style={{ margin: '4px 0 8px' }}><Divider label="или" /></div>
-          <TimeSettingRow
-            name="timing"
-            label="на игру"
-            hint={parseInt(timeValue) > 0 && timeMode === 'per_game'
-              ? <span>(<TimeEstimator mode="per_game" timeSeconds={parseInt(timeValue)} totalItems={parseInt(questionCount) || 20} />)</span>
-              : <span>(—)</span>
-            }
-            options={timePerG}
-            value={timeValue}
-            onTimeChange={(v) => { setTimeMode('per_game'); setTimeValue(v) }}
-          />
-        </div>
-        <div style={{ width: '38%' }}>
-          <div style={{ marginBottom: 10 }}>
-            <Checkbox label={`только новые${onlyNew ? ' (159)' : ''}`} checked={onlyNew} onChange={(e) => setOnlyNew(e.target.checked)} />
-          </div>
-          <Select options={qtyOptions} value={questionCount} onChange={(e) => setQuestionCount(e.target.value)} />
-        </div>
-      </div>
-      <div className="clear" />
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Время</h2>
+        <p className={styles.sectionDesc}>
+          {timeMode === 'per_question' && parseInt(timeValue) > 0 && (
+            <span><TimeEstimator mode="per_question" timeSeconds={parseInt(timeValue)} totalItems={qtyForEstimate} /></span>
+          )}
+          {timeMode === 'per_game' && parseInt(timeValue) > 0 && (
+            <span><TimeEstimator mode="per_game" timeSeconds={parseInt(timeValue)} totalItems={qtyForEstimate} /></span>
+          )}
+          {parseInt(timeValue) === 0 && 'Без ограничений'}
+        </p>
 
-      <div style={{ textAlign: 'center' }}>
+        <TimeSettingRow
+          name="timing"
+          label="На вопрос"
+          options={timePerQ}
+          defaultChecked={timeMode === 'per_question'}
+          value={timeValue}
+          onTimeChange={(v) => { setTimeMode('per_question'); setTimeValue(v) }}
+        />
+
+        <div className={styles.divider}><Divider label="или" /></div>
+
+        <TimeSettingRow
+          name="timing"
+          label="На игру"
+          options={timePerG}
+          defaultChecked={timeMode === 'per_game'}
+          value={timeValue}
+          onTimeChange={(v) => { setTimeMode('per_game'); setTimeValue(v) }}
+        />
+      </div>
+
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Вопросы</h2>
+        <div className={styles.optionsRow}>
+          <div className={styles.qtyCol}>
+            <Select options={qtyOptions} value={questionCount} onChange={(e) => setQuestionCount(e.target.value)} size="lg" fullWidth />
+          </div>
+          <div className={styles.checkCol}>
+            <Checkbox label="Только новые" checked={onlyNew} onChange={(e) => setOnlyNew(e.target.checked)} />
+          </div>
+        </div>
+        {selectedQ > 0 && (
+          <div className={styles.selectedInfo}>
+            Выбрано подтем: {selectedIds.length} · доступно вопросов: {selectedQ}
+          </div>
+        )}
+      </div>
+
+      <div className={styles.actions}>
         <Button variant="primary" size="lg" onClick={handleStart} disabled={!canStart}>
-          {canStart ? 'СТАРТ!' : 'Выберите темы'}
+          СТАРТ!
         </Button>
-        {!canStart && <div style={{ color: '#FF6633', fontSize: 12, marginTop: 8 }}>Выберите хотя бы одну подтему</div>}
+        {!canStart && <div className={styles.hint}>Выберите хотя бы одну подтему</div>}
       </div>
     </div>
   )

@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import { IconPicker } from '../../molecules/IconPicker/IconPicker'
 import { InlineEdit } from '../../molecules/InlineEdit/InlineEdit'
 import { TopicCard, type Topic } from '../../molecules/TopicCard/TopicCard'
-import { levelIcons } from '../../../mocks/fixtures/levelIcons'
 import styles from './UserProfile.module.scss'
 
 export interface UserProfileProps {
@@ -16,11 +14,10 @@ export interface UserProfileProps {
     topics: { name: string; subtopics: string[] }[]
   }
   isOwner?: boolean
-  onSave?: (fields: { nickname?: string; name?: string; icon?: string }) => void
+  onSave?: (fields: { nickname?: string; name?: string }) => void
 }
 
 export function UserProfile({ user, isOwner = false, onSave }: UserProfileProps) {
-  const [icon, setIcon] = useState(user.icon)
   const [nickname, setNickname] = useState(user.nickname)
   const [name, setName] = useState(user.name)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
@@ -40,11 +37,7 @@ export function UserProfile({ user, isOwner = false, onSave }: UserProfileProps)
     <div className={styles.profile}>
       <div className={styles.left}>
         <div className={styles.iconRow}>
-          {isOwner ? (
-            <IconPicker value={icon} icons={levelIcons} onChange={(v) => { setIcon(v); handleSave('icon', v) }} />
-          ) : (
-            <span className={styles.iconStatic}>{icon}</span>
-          )}
+          <span className={styles.iconStatic}>{user.icon}</span>
         </div>
 
         <a href="#" className={styles.level}>{user.level}</a>

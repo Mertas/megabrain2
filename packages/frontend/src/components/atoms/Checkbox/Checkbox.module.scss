@@ -27,29 +27,34 @@
   flex-shrink: 0;
   background: $color-bg-white;
   transition: background 0.15s, border-color 0.15s;
+
+  &::after {
+    content: '\2713';
+    color: transparent;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    transition: color 0.15s;
+  }
 }
 
 .input:checked + .box {
   background: $color-accent;
   border-color: $color-accent;
+
   &::after {
-    content: '\2713';
     color: $color-bg-white;
-    font-size: 12px;
-    font-weight: bold;
-    line-height: 1;
   }
 }
 
 .input:indeterminate + .box {
   background: $color-accent;
   border-color: $color-accent;
+
   &::after {
     content: '\2013';
     color: $color-bg-white;
     font-size: 14px;
-    font-weight: bold;
-    line-height: 1;
   }
 }
 

@@ -21,6 +21,8 @@ export interface AnswerResultItemProps {
   note?: string
   /** Источник */
   explanationSource?: string
+  /** Очки за вопрос */
+  points?: number
   /** Колбэк для репорта ошибки */
   onReportMistake?: () => void
 }
@@ -35,6 +37,7 @@ export function AnswerResultItem({
   explanation,
   note,
   explanationSource,
+  points,
   onReportMistake,
 }: AnswerResultItemProps) {
   const [showExplanation, setShowExplanation] = useState(false)
@@ -50,6 +53,9 @@ export function AnswerResultItem({
           )}
           <span className={styles.question}>{question}</span>
         </div>
+        {points !== undefined && (
+          <span className={styles.points}>+{points}</span>
+        )}
       </div>
 
       <div className={styles.answers}>
@@ -80,7 +86,7 @@ export function AnswerResultItem({
         })}
       </div>
 
-      {note && <div className={styles.note}>{'\u{1F4DD}'} {note}</div>}
+      {note && <div className={styles.note}>{note}</div>}
 
       <div className={styles.footer}>
         {explanation && (

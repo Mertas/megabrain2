@@ -1,6 +1,18 @@
 import { db } from './connection.js'
+import bcrypt from 'bcryptjs'
 
 export function seed(): void {
+  // Ensure admin user exists
+  const existingAdmin = db.prepare('SELECT id FROM users WHERE login = ?').get('Mertas') as { id: number } | undefined
+  if (!existingAdmin) {
+    const pw = bcrypt.hashSync('admin123', 10)
+    db.prepare('INSERT INTO users (login, email, password, nickname, level, icon, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?)').run(
+      'Mertas', 'admin@megabrain.ru', pw, 'Mertas', 99, '\u2655', 1,
+    )
+    console.log('[SEED] Admin user created: Mertas / admin123')
+  } else {
+    db.prepare('UPDATE users SET is_admin = 1 WHERE login = ?').run('Mertas')
+  }
   const topicCount = (db.prepare('SELECT COUNT(*) as c FROM topics').get() as { c: number }).c
   if (topicCount >= 20) {
     console.log('[SEED] Already seeded, skipping')

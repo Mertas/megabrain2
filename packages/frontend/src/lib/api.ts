@@ -7,6 +7,7 @@ export interface UserPublic {
   nickname: string
   level: number
   icon: string
+  is_admin: number
   created_at: string
 }
 
@@ -188,6 +189,13 @@ export async function resetPassword(token: string, password: string): Promise<Au
   return result
 }
 
+export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+  return request('/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ oldPassword, newPassword }),
+  })
+}
+
 export interface ApiCategory {
   id: number
   name: string
@@ -223,9 +231,263 @@ export async function fetchQuestions(topicIds: number[], count?: number, hideAns
   return request(`/topics/questions?${params.toString()}`)
 }
 
-export async function checkAnswer(questionId: number, answer: string): Promise<{ correct: boolean; correctAnswer: string; explanation: string | null; message: string }> {
+export async function checkAnswer(questionId: number, answer: string, timeElapsedCs?: number, timeLimitSeconds?: number): Promise<{ correct: boolean; correctAnswer: string; explanation: string | null; message: string }> {
   return request('/game/check-answer', {
+    method: 'POST',
+    body: JSON.stringify({ questionId, answer, timeElapsedCs, timeLimitSeconds }),
+  })
+}
+
+// --------------- Game config ---------------
+
+export interface SavedGameConfig {
+  subtopicIds: number[]
+  timeMode: 'per_question' | 'per_game'
+  timeValue: string
+  questionCount: string
+  onlyNew: boolean
+}
+
+export async function fetchGameConfig(): Promise<SavedGameConfig | null> {
+  return request('/game/config')
+}
+
+export async function saveGameConfig(config: SavedGameConfig): Promise<void> {
+  return request('/game/config', {
+    method: 'POST',
+    body: JSON.stringify(config),
+  })
+}
+
+// --------------- Admin API ---------------
+
+export interface AdminQuestion {
+  id: number
+  text: string
+  answer_1: string
+  answer_2: string
+  answer_3: string
+  answer_4: string
+  correct_index: number
+  explanation: string | null
+  note: string | null
+  image_url: string | null
+  topic_id: number
+  topic_name: string
+  category_id: number
+  category_name: string
+}
+
+export interface AdminPageResult<T> {
+  items: T[]
+  total: number
+  page: number
+  pages: number
+}
+
+export interface AdminCategory {
+  id: number
+  name: string
+  icon: string
+  sort_order: number
+  topics: { id: number; name: string; question_count: number; sort_order: number }[]
+}
+
+export interface AdminUser {
+  id: number
+  login: string
+  email: string
+  nickname: string
+  level: number
+  icon: string
+  is_admin: number
+  created_at: string
+}
+
+export async function fetchAdminQuestions(page = 1, search = ''): Promise<AdminPageResult<AdminQuestion>> {
+  const params = new URLSearchParams({ page: String(page), limit: '50' })
+  if (search) params.set('search', search)
+  return request(`/admin/questions?${params}`)
+}
+
+export async function fetchAdminQuestion(id: number): Promise<AdminQuestion> {
+  return request(`/admin/questions/${id}`)
+}
+
+export async function updateAdminQuestion(id: number, data: Partial<AdminQuestion>): Promise<void> {
+  return request(`/admin/questions/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+}
+
+export async function deleteAdminQuestion(id: number): Promise<void> {
+  return request(`/admin/questions/${id}`, { method: 'DELETE' })
+}
+
+export async function fetchAdminCategories(): Promise<AdminCategory[]> {
+  return request('/admin/categories')
+}
+
+export async function createAdminCategory(name: string, icon?: string): Promise<{ id: number }> {
+  return request('/admin/categories', { method: 'POST', body: JSON.stringify({ name, icon }) })
+}
+
+export async function updateAdminCategory(id: number, data: { name?: string; icon?: string }): Promise<void> {
+  return request(`/admin/categories/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+}
+
+export async function deleteAdminCategory(id: number): Promise<void> {
+  return request(`/admin/categories/${id}`, { method: 'DELETE' })
+}
+
+export async function createAdminTopic(categoryId: number, name: string): Promise<{ id: number }> {
+  return request('/admin/topics', { method: 'POST', body: JSON.stringify({ category_id: categoryId, name }) })
+}
+
+export async function updateAdminTopic(id: number, data: { name?: string; category_id?: number }): Promise<void> {
+  return request(`/admin/topics/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+}
+
+export async function deleteAdminTopic(id: number): Promise<void> {
+  return request(`/admin/topics/${id}`, { method: 'DELETE' })
+}
+
+export async function fetchAdminUsers(page = 1, search = ''): Promise<AdminPageResult<AdminUser>> {
+  const params = new URLSearchParams({ page: String(page), limit: '50' })
+  if (search) params.set('search', search)
+  return request(`/admin/users?${params}`)
+}
+
+export async function updateAdminUser(id: number, data: { is_admin?: number; nickname?: string }): Promise<void> {
+  return request(`/admin/users/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+}
+
+// --------------- Public API (no auth) ---------------
+
+export interface PublicQuestion {
+  question: {
+    id: number
+    text: string
+    imageUrl: string | null
+    answers: string[]
+    correctIndex: number
+    note: string | null
+  }
+  topic: {
+    id: number
+    name: string
+    categoryName: string
+  }
+}
+
+export async function fetchPublicQuestion(): Promise<PublicQuestion> {
+  return request('/public/random-question')
+}
+
+export async function checkPublicAnswer(questionId: number, answer: string): Promise<{ correct: boolean; correctAnswer: string; explanation: string | null; message: string }> {
+  return request('/public/check-answer', {
     method: 'POST',
     body: JSON.stringify({ questionId, answer }),
   })
+}
+
+// --------------- Users / Profile ---------------
+
+export interface UserProfileData {
+  id: number
+  login: string
+  nickname: string
+  level: number
+  icon: string
+  score: number
+  elo: number
+  name: string
+  location: string
+  firstSeen: string
+  topics: { name: string; subtopics: string[] }[]
+  stats: {
+    questionsAuthored: number
+    gamesPlayed: number
+    totalQuestions: number
+    totalCorrect: number
+    accuracy: number
+    totalScore: number
+    recent: { id: number; total: number; correct: number; score: number; date: string }[]
+  }
+}
+
+export interface UserListItem {
+  id: number
+  login: string
+  nickname: string
+  level: number
+  icon: string
+  elo: number
+  authoredCount: number
+}
+
+export async function fetchUsers(page = 1, search = ''): Promise<AdminPageResult<UserListItem>> {
+  const params = new URLSearchParams({ page: String(page), limit: '30' })
+  if (search) params.set('search', search)
+  return request(`/users?${params}`)
+}
+
+export async function fetchUserProfile(login: string): Promise<UserProfileData> {
+  return request(`/users/${encodeURIComponent(login)}`)
+}
+
+export async function updateProfile(userId: number, data: { nickname?: string }): Promise<UserProfileData> {
+  return request(`/users/${userId}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
+
+// --------------- Scoring ---------------
+
+export interface GameScoreResult {
+  totalAwarded: number
+  score: number
+  breakdown: { questionId: number; points: number }[]
+}
+
+export async function submitGameResult(data: {
+  timeMode: 'per_question' | 'per_game'
+  timeSeconds: number
+  total: number
+  correct: number
+  questions: { questionId: number; correct: boolean; timeElapsedCs: number }[]
+}): Promise<GameScoreResult> {
+  return request('/game/submit-result', { method: 'POST', body: JSON.stringify(data) })
+}
+
+// --------------- PvP ---------------
+
+export interface PvPRatingEntry {
+  rank: number
+  userId: number
+  login: string
+  nickname: string
+  icon: string
+  rating: number
+  wins: number
+  losses: number
+  draws: number
+}
+
+export interface PvPHistoryEntry {
+  id: number
+  opponent: { login: string; nickname: string }
+  won: boolean
+  draw: boolean
+  yourScore: number
+  opponentScore: number
+  eloChange: number
+  questionCount: number
+  date: string
+}
+
+export async function fetchPvPRatings(page = 1): Promise<AdminPageResult<PvPRatingEntry>> {
+  const params = new URLSearchParams({ page: String(page), limit: '50' })
+  return request(`/pvp/ratings?${params}`)
+}
+
+export async function fetchPvPHistory(login: string, page = 1): Promise<AdminPageResult<PvPHistoryEntry>> {
+  const params = new URLSearchParams({ page: String(page), limit: '20' })
+  return request(`/pvp/history/${encodeURIComponent(login)}?${params}`)
 }

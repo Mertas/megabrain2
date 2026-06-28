@@ -1,0 +1,85 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.title {
+  font-size: $font-size-2xl;
+  margin: 0 0 20px;
+}
+
+.section {
+  background: $color-bg-white;
+  border: 1px solid $color-border;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  margin: 0 0 4px;
+}
+
+.sectionDesc {
+  font-size: 10px;
+  color: $color-muted;
+  margin: 0 0 12px;
+}
+
+.divider {
+  margin: 6px 0 8px;
+}
+
+.optionsRow {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.qtyCol {
+  flex: 1;
+  max-width: 240px;
+}
+
+.checkCol {
+  flex-shrink: 0;
+}
+
+.selectedInfo {
+  font-size: 12px;
+  color: $color-muted;
+  margin-top: 10px;
+  line-height: 1.4;
+}
+
+.actions {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.hint {
+  color: $color-accent;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+@include mobile {
+  .section {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    padding: 14px 16px;
+  }
+
+  .optionsRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .qtyCol {
+    max-width: none;
+  }
+
+  .checkCol {
+    padding-top: 0;
+  }
+}

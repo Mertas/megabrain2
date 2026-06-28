@@ -1,0 +1,107 @@
+@use '../../../styles/variables' as *;
+
+.resultHeader {
+  display: flex;
+  justify-content: space-around;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.resultScores {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.scoreBlock {
+  text-align: center;
+}
+
+.scoreValue {
+  font-size: 36px;
+  color: $color-accent;
+  font-weight: bold;
+}
+
+.scoreLabel {
+  font-size: 12px;
+  color: #666;
+}
+
+.scoreVs {
+  font-size: 14px;
+  color: #999;
+  font-weight: bold;
+}
+
+.eloChange {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.breakRow {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid $color-border;
+  font-size: 13px;
+  align-items: center;
+}
+
+.qNum {
+  width: 30px;
+  color: #999;
+}
+
+.qMine {
+  flex: 1;
+  text-align: right;
+}
+
+.qOpp {
+  flex: 1;
+  text-align: left;
+}
+
+.qPts {
+  width: 50px;
+  text-align: right;
+  color: #666;
+  font-size: 11px;
+}
+
+.center {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.countdown {
+  font-size: 72px;
+  color: $color-accent;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.oppIndicator {
+  display: flex;
+  gap: 4px;
+  font-size: 10px;
+}
+
+.oppDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $color-border;
+
+  &.answered {
+    background: $color-accent;
+  }
+
+  &.disconnected {
+    background: $color-error;
+  }
+}

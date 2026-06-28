@@ -1,4 +1,5 @@
 @use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
 
 .logoBtn {
   display: block;
@@ -13,4 +14,52 @@
   border: none;
   cursor: pointer;
   padding: 0;
+}
+
+.hamburger {
+  display: none;
+}
+
+.overlay {
+  display: none;
+}
+
+@include mobile {
+  .logoBtn {
+    position: static;
+    width: 160px;
+    height: 42px;
+    background-size: contain;
+    margin-left: 8px;
+  }
+
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    flex-shrink: 0;
+
+    span {
+      display: block;
+      height: 3px;
+      background: $color-text-light;
+      border-radius: 2px;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+  }
+
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+  }
 }

@@ -1,0 +1,40 @@
+@use '../../../styles/variables' as *;
+
+.wrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+
+  th, td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid $color-border;
+    vertical-align: middle;
+  }
+
+  th {
+    background: $color-bg-dark;
+    color: $color-text-light;
+    font-weight: normal;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  td {
+    line-height: 1.4;
+  }
+
+  tbody tr:hover {
+    background: $color-bg-light;
+  }
+}
+
+.empty {
+  text-align: center !important;
+  padding: 32px !important;
+  color: #999;
+}

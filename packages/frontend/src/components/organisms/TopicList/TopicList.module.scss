@@ -1,5 +1,14 @@
+@use '../../../styles/mixins' as *;
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px 16px;
+}
+
+@include mobile {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 }

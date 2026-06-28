@@ -6,6 +6,7 @@ export interface User {
   nickname: string
   level: number
   icon: string
+  is_admin: number
   created_at: string
   updated_at: string
 }
@@ -17,6 +18,7 @@ export interface UserPublic {
   nickname: string
   level: number
   icon: string
+  is_admin: number
   created_at: string
 }
 
@@ -36,6 +38,7 @@ export function toPublic(user: User): UserPublic {
     nickname: user.nickname,
     level: user.level,
     icon: user.icon,
+    is_admin: user.is_admin,
     created_at: user.created_at,
   }
 }

@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Textarea } from '../../atoms/Textarea/Textarea'
 import { Select } from '../../atoms/Select/Select'
 import { Button } from '../../atoms/Button/Button'
 import { Input } from '../../atoms/Input/Input'
-import type { ApiCategory, ApiTopic } from '../../../lib/api'
+import {
+  createAdminCategory, createAdminTopic, fetchAdminCategories,
+  type ApiCategory, type ApiTopic,
+} from '../../../lib/api'
 
 interface ParsedQuestion {
   text: string
@@ -27,13 +30,11 @@ function parseQuestions(raw: string): ParsedQuestion[] {
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i]
-      // Note line
       const noteMatch = line.match(/^[#!]\s*(.+)/)
       if (noteMatch) {
         note = noteMatch[1]
         continue
       }
-      // Answer line
       const match = line.match(/^(\*)?\s*\d+\.?\s*(.+)/)
       if (!match) continue
       const [, star, text] = match
@@ -56,13 +57,18 @@ export interface AddQuestionsProps {
   topics: ApiTopic[]
 }
 
-export function AddQuestions({ categories, topics: _topics }: AddQuestionsProps) {
+export function AddQuestions({ categories: initialCats }: AddQuestionsProps) {
+  const [categories, setCategories] = useState(initialCats)
   const [raw, setRaw] = useState('')
   const [selectedTopic, setSelectedTopic] = useState('')
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newTopicName, setNewTopicName] = useState('')
   const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [creating, setCreating] = useState(false)
+
+  useEffect(() => { setCategories(initialCats) }, [initialCats])
 
   const parsed = parseQuestions(raw)
 
@@ -70,6 +76,7 @@ export function AddQuestions({ categories, topics: _topics }: AddQuestionsProps)
     if (!selectedTopic || parsed.length === 0) return
     setLoading(true)
     setMessage('')
+    setError('')
 
     try {
       const res = await fetch('http://localhost:3001/api/topics/questions/bulk', {
@@ -82,12 +89,46 @@ export function AddQuestions({ categories, topics: _topics }: AddQuestionsProps)
         setMessage(`Добавлено ${data.added} вопросов!`)
         setRaw('')
       } else {
-        setMessage(`Ошибка: ${data.message || data.error}`)
+        setError(data.message || data.error || 'Ошибка')
       }
     } catch {
-      setMessage('Ошибка соединения с сервером')
+      setError('Ошибка соединения с сервером')
     }
     setLoading(false)
+  }
+
+  const handleCreateTopic = async () => {
+    const catName = newCategoryName.trim()
+    const tName = newTopicName.trim()
+    if (!catName || !tName) return
+
+    setCreating(true)
+    setMessage('')
+    setError('')
+
+    try {
+      // Find or create category
+      let catId = categories.find((c) => c.name.toLowerCase() === catName.toLowerCase())?.id
+      if (!catId) {
+        const result = await createAdminCategory(catName)
+        catId = result.id
+      }
+
+      // Create topic
+      const result = await createAdminTopic(catId, tName)
+
+      // Refresh categories
+      const fresh = await fetchAdminCategories()
+      setCategories(fresh)
+
+      setSelectedTopic(String(result.id))
+      setNewCategoryName('')
+      setNewTopicName('')
+      setMessage(`Тема "${tName}" создана и выбрана`)
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Не удалось создать тему')
+    }
+    setCreating(false)
   }
 
   const topicOptions = categories.flatMap((c) =>
@@ -110,35 +151,38 @@ export function AddQuestions({ categories, topics: _topics }: AddQuestionsProps)
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <Input
           label="Новая категория"
           value={newCategoryName}
           onChange={(e) => setNewCategoryName(e.target.value)}
           placeholder="Например: Биология"
-          style={{ flex: 1, minWidth: 200 }}
+          style={{ flex: 1, minWidth: 160 }}
         />
         <Input
           label="Новая тема"
           value={newTopicName}
           onChange={(e) => setNewTopicName(e.target.value)}
           placeholder="Например: Генетика"
-          style={{ flex: 1, minWidth: 200 }}
+          style={{ flex: 1, minWidth: 160 }}
         />
-        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-          <Button variant="secondary" size="sm" onClick={() => {
-            if (newCategoryName && newTopicName) {
-              setMessage(`Тема "${newTopicName}" в категории "${newCategoryName}" будет создана при первом добавлении вопроса.`)
-            }
-          }}>
-            + Создать тему
-          </Button>
-        </div>
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={handleCreateTopic}
+          disabled={!newCategoryName.trim() || !newTopicName.trim() || creating}
+          loading={creating}
+        >
+          Создать тему
+        </Button>
       </div>
 
       <div style={{ marginBottom: 12, fontSize: 14, color: '#666' }}>
-        Вставьте вопросы: первая строка — вопрос, затем варианты. Правильный ответ — звёздочка *.
-        Строка с # в начале — примечание. Вопросы разделяются пустой строкой.
+        Вставьте вопросы: первая строка — вопрос, затем варианты. Правильный ответ — звёздочка *. Строка с # в начале — примечание. Вопросы разделяются пустой строкой.
+      </div>
+
+      <div style={{ marginBottom: 12, fontSize: 11, color: '#999', lineHeight: 1.5 }}>
+        Пример: «Какой соус основной в китайской кухне?» — «*1. Соевый», «2. Устричный», «3. Рыбный», «4. Хойсин», «# Самый популярный соус в Азии». Звёздочка перед номером — правильный ответ. Можно сколько угодно, лишь бы пустые строки между вопросами не забывали.
       </div>
 
       <Textarea
@@ -158,8 +202,13 @@ export function AddQuestions({ categories, topics: _topics }: AddQuestionsProps)
       </div>
 
       {message && (
-        <div style={{ marginTop: 12, padding: 8, borderRadius: 4, fontSize: 12, color: message.startsWith('Добавлено') ? '#37CE74' : '#FF0000', border: `1px solid ${message.startsWith('Добавлено') ? '#37CE74' : '#FF0000'}`, background: message.startsWith('Добавлено') ? 'rgba(55,206,116,0.1)' : 'rgba(255,0,0,0.05)' }}>
+        <div style={{ marginTop: 12, padding: 8, borderRadius: 4, fontSize: 12, color: '#37CE74', border: '1px solid #37CE74', background: 'rgba(55,206,116,0.1)' }}>
           {message}
+        </div>
+      )}
+      {error && (
+        <div style={{ marginTop: 12, padding: 8, borderRadius: 4, fontSize: 12, color: '#FF0000', border: '1px solid #FF0000', background: 'rgba(255,0,0,0.05)' }}>
+          {error}
         </div>
       )}
 
@@ -169,8 +218,9 @@ export function AddQuestions({ categories, topics: _topics }: AddQuestionsProps)
           size="lg"
           onClick={handleSubmit}
           disabled={!selectedTopic || parsed.length === 0 || loading}
+          loading={loading}
         >
-          {loading ? 'Добавление...' : `Добавить ${parsed.length} вопросов`}
+          Добавить {parsed.length} вопросов
         </Button>
       </div>
 
@@ -187,7 +237,7 @@ export function AddQuestions({ categories, topics: _topics }: AddQuestionsProps)
               ))}
               {q.note && (
                 <div style={{ fontSize: 12, marginLeft: 20, marginTop: 6, color: '#999', fontStyle: 'italic' }}>
-                  📝 {q.note}
+                  {q.note}
                 </div>
               )}
             </div>

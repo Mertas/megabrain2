@@ -1,3 +1,5 @@
+@use '../../../styles/mixins' as *;
+
 .form {
   display: flex;
   gap: 4px;
@@ -6,8 +8,19 @@
 
 .query {
   width: 400px;
+  max-width: 100%;
 }
 
 .submit {
   font-size: 17px;
+}
+
+@include mobile {
+  .form {
+    flex-direction: column;
+  }
+
+  .query {
+    width: 100%;
+  }
 }

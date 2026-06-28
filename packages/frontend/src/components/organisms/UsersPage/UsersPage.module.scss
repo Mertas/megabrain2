@@ -1,0 +1,13 @@
+@use '../../../styles/variables' as *;
+
+.title {
+  font-size: $font-size-2xl;
+  margin: 0 0 16px;
+}
+
+.pagination {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 16px;
+}

@@ -11,7 +11,7 @@ const mockCategories = [
 export default function NewGameFormFixture() {
   return (
     <Layout activeNav="game" breadcrumbs={[{ label: 'Игра' }, { label: 'Новая игра' }]}>
-      <NewGameForm categories={mockCategories} onStart={(c) => alert(JSON.stringify(c, null, 2))} />
+      <NewGameForm categories={mockCategories} lastConfig={null} onStart={(c) => alert(JSON.stringify(c, null, 2))} />
     </Layout>
   )
 }

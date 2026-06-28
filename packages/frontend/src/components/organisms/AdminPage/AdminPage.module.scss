@@ -1,0 +1,135 @@
+@use '../../../styles/variables' as *;
+
+.title {
+  font-size: $font-size-2xl;
+  margin: 0 0 16px;
+}
+
+.content {
+  margin-top: 16px;
+}
+
+.textCell {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+}
+
+.pagination {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.editOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 40px;
+  z-index: 200;
+  overflow-y: auto;
+}
+
+.editPanel {
+  background: $color-bg-white;
+  border-radius: 10px;
+  padding: 24px;
+  width: 560px;
+  max-width: calc(100vw - 32px);
+  margin-bottom: 40px;
+
+  h3 {
+    font-size: 19px;
+    margin: 0 0 16px;
+  }
+}
+
+.editField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.editLabel {
+  font-size: 10px;
+  color: #666;
+}
+
+.editTextarea {
+  font-family: $font-family;
+  font-size: 12px;
+  border: 1px solid $color-border;
+  border-radius: 4px;
+  padding: 6px 10px;
+  resize: vertical;
+  width: 100%;
+
+  &:focus {
+    border-color: $color-primary;
+    outline: none;
+  }
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.catCard {
+  background: $color-bg-white;
+  border: 1px solid $color-border;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.catName {
+  font-size: 19px;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topicList {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.topicItem {
+  font-size: 12px;
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qCount {
+  color: $color-muted;
+  font-size: 10px;
+}
+
+.addRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.loader {
+  text-align: center;
+  padding: 40px;
+}

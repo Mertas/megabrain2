@@ -37,6 +37,7 @@ export function TopicCard({
   expanded = false,
 }: TopicCardProps) {
   const allSelected = topic.subtopics.length > 0 && topic.subtopics.every((s) => selectedIds.includes(s.id))
+  const selectedCount = topic.subtopics.filter((s) => selectedIds.includes(s.id)).length
   const visible = topic.subtopics.slice(0, visibleLimit)
   const hidden = topic.subtopics.slice(visibleLimit)
   const hasMore = hidden.length > 0
@@ -65,13 +66,20 @@ export function TopicCard({
     <div className={styles.topic}>
       <h3>
         {topic.icon}{' '}
-        <span className={styles.topicLink} onClick={onSelectAll} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onSelectAll?.() }}>
+        <span
+          className={styles.topicBtn}
+          role="button"
+          tabIndex={0}
+          onClick={onSelectAll}
+          onKeyDown={(e) => { if (e.key === 'Enter') onSelectAll?.() }}
+        >
           {topic.name}
         </span>
+        <span className={styles.count}>({selectedCount}/{topic.subtopics.length})</span>
       </h3>
       <div className={styles.selectAll}>
         <button type="button" className={styles.selectAllBtn} onClick={onSelectAll}>
-          {allSelected ? 'отменить' : 'выбрать все'}
+          {allSelected ? 'отменить все' : 'выбрать все'}
         </button>
       </div>
       <div className={styles.subtopics}>
@@ -86,7 +94,7 @@ export function TopicCard({
         {hasMore && (
           <SubtopicBadge
             key="show-all"
-            name="показать все"
+            name={`показать все (ещё ${hidden.length})`}
             onClick={onShowAll}
           />
         )}

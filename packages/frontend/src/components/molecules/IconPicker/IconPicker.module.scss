@@ -1,4 +1,5 @@
 @use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
 
 .picker {
   display: inline-block;
@@ -61,5 +62,18 @@
 
   &:hover {
     background: $color-accent;
+  }
+}
+
+@include mobile {
+  .grid {
+    max-width: calc(100vw - 32px);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .option {
+    width: 36px;
+    font-size: 36px;
   }
 }

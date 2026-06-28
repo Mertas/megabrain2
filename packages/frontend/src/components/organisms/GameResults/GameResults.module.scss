@@ -1,7 +1,9 @@
 @use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
 
 .header {
   width: 350px;
+  max-width: 100%;
   background: $color-bg-white;
   text-align: center;
   border: 3px solid #47666B;
@@ -34,4 +36,27 @@
 .avgTime {
   font-size: $font-size-sm;
   display: block;
+}
+
+.scoreLine {
+  font-size: 15px;
+  color: $color-accent;
+}
+
+@include mobile {
+  .header {
+    float: none;
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 16px;
+  }
+
+  .headerText {
+    font-size: 16px;
+    padding: 8px 16px;
+  }
+
+  .stats {
+    font-size: 13px;
+  }
 }

@@ -2,9 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Timer } from '../../molecules/Timer/Timer'
 import { AnswerGrid, type AnswerCheckResult } from '../../molecules/AnswerGrid/AnswerGrid'
 import { GameQuitConfirm } from '../../molecules/GameQuitConfirm/GameQuitConfirm'
-import { useToast } from '../../molecules/ToastContainer/ToastContainer'
 import { Button } from '../../atoms/Button/Button'
 import { checkAnswer } from '../../../lib/api'
+import { calcScore } from '../../../lib/score'
 import styles from './GameBoard.module.scss'
 
 export interface Question {
@@ -15,15 +15,25 @@ export interface Question {
   note?: string
 }
 
+export interface QuestionResult {
+  question: Question
+  selectedIndex: number | null
+  correctIndex: number
+  timeElapsedCs: number
+}
+
 export interface GameResult {
   total: number
   correct: number
   timeCs: number
-  questions: { question: Question; selectedIndex: number | null; correctIndex: number }[]
+  questions: QuestionResult[]
 }
 
 export interface GameBoardProps {
   questions: Question[]
+  timeMode: 'per_question' | 'per_game'
+  timeSeconds: number
+  isAdmin?: boolean
   onFinish: (result: GameResult) => void
 }
 
@@ -36,72 +46,140 @@ function plural(n: number, forms: [string, string, string]) {
   return forms[2]
 }
 
-export function GameBoard({ questions, onFinish }: GameBoardProps) {
+export function GameBoard({ questions, timeMode, timeSeconds, isAdmin = false, onFinish }: GameBoardProps) {
   const [idx, setIdx] = useState(0)
   const correctCountRef = useRef(0)
-  const timerCsRef = useRef(0)
-  const [timerCs, setTimerCs] = useState(0)
+  const totalCsRef = useRef(0)
+  const questionStartCsRef = useRef(0)
+  const [totalCs, setTotalCs] = useState(0)
   const [paused, setPaused] = useState(false)
   const [quitVisible, setQuitVisible] = useState(false)
-  const resultsRef = useRef<GameResult['questions']>([])
-  const { show, toasts, remove, ToastContainer } = useToast()
+  const [timeUp, setTimeUp] = useState(false)
+  const [lastCorrect, setLastCorrect] = useState(false)
+  const [lastTimeCs, setLastTimeCs] = useState(0)
+  const [adminScore, setAdminScore] = useState(0)
+  const resultsRef = useRef<QuestionResult[]>([])
+  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const question = questions[idx]
+  const timeLimitCs = timeSeconds * 100
 
+  const questionElapsed = totalCs - questionStartCsRef.current
+  const remainingCs = timeLimitCs - questionElapsed
+
+  // Timer tick
   useEffect(() => {
     if (paused || !question) return
     const id = setInterval(() => {
-      timerCsRef.current += 1
-      setTimerCs(timerCsRef.current)
+      totalCsRef.current += 1
+      setTotalCs(totalCsRef.current)
     }, 10)
     return () => clearInterval(id)
   }, [paused, question])
 
+  // Enforce per-question time limit
+  useEffect(() => {
+    if (timeMode !== 'per_question' || timeSeconds <= 0 || paused || !question) return
+
+    const elapsed = totalCs - questionStartCsRef.current
+    const remaining = timeLimitCs - elapsed
+    if (remaining <= 0) {
+      setPaused(true)
+      setTimeUp(true)
+      return
+    }
+
+    const delay = remaining * 10
+    const id = setTimeout(() => {
+      setPaused(true)
+      setTimeUp(true)
+    }, delay)
+    return () => clearTimeout(id)
+  }, [timeMode, timeSeconds, timeLimitCs, paused, question, totalCs, idx])
+
+  // Enforce per-game time limit
+  useEffect(() => {
+    if (timeMode !== 'per_game' || timeSeconds <= 0) return
+
+    const remaining = timeLimitCs - totalCs
+    if (remaining <= 0) {
+      setPaused(true)
+      setTimeUp(true)
+      return
+    }
+
+    const delay = remaining * 10
+    const id = setTimeout(() => {
+      setPaused(true)
+      setTimeUp(true)
+    }, delay)
+    return () => clearTimeout(id)
+  }, [timeMode, timeSeconds, timeLimitCs, totalCs])
+
+  const finishGame = useCallback(() => {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
+    onFinish({
+      total: questions.length,
+      correct: correctCountRef.current,
+      timeCs: totalCsRef.current,
+      questions: [...resultsRef.current],
+    })
+  }, [questions.length, onFinish])
+
   const advance = useCallback(() => {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
     if (idx + 1 >= questions.length) {
-      onFinish({
-        total: questions.length,
-        correct: correctCountRef.current,
-        timeCs: timerCsRef.current,
-        questions: [...resultsRef.current],
-      })
+      finishGame()
     } else {
+      questionStartCsRef.current = totalCsRef.current
       setIdx((i) => i + 1)
       setPaused(false)
+      setTimeUp(false)
     }
-  }, [idx, questions.length, onFinish])
+  }, [idx, questions.length, finishGame])
+
+  // Auto-advance after time up
+  useEffect(() => {
+    if (!timeUp) return
+    if (timeMode === 'per_game') {
+      finishGame()
+      return
+    }
+    advanceTimerRef.current = setTimeout(advance, 2500)
+    return () => { if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current) }
+  }, [timeUp, timeMode, advance, finishGame])
 
   const handleAnswer = useCallback(async (answerText: string): Promise<AnswerCheckResult> => {
     setPaused(true)
-    const result = await checkAnswer(question.id, answerText)
+    const answerTimeCs = totalCsRef.current - questionStartCsRef.current
+    const result = await checkAnswer(question.id, answerText, answerTimeCs, timeSeconds)
+
+    setLastCorrect(result.correct)
+    setLastTimeCs(answerTimeCs)
 
     if (result.correct) correctCountRef.current++
+
     const selectedIndex = question.answers.indexOf(answerText)
     const correctIndex = question.answers.indexOf(result.correctAnswer)
-    resultsRef.current.push({ question, selectedIndex, correctIndex })
+    resultsRef.current.push({ question, selectedIndex, correctIndex, timeElapsedCs: answerTimeCs })
 
-    show({
-      variant: result.correct ? 'correct' : 'wrong',
-      message: result.correctAnswer,
-      autoHide: 2300,
-    })
+    if (isAdmin) {
+      const points = calcScore(answerTimeCs, timeMode, timeSeconds, questions.length, result.correct)
+      setAdminScore((s) => Math.round((s + points) * 100) / 100)
+    }
 
-    setTimeout(advance, 2500)
+    advanceTimerRef.current = setTimeout(advance, 2500)
     return result
-  }, [question, show, advance])
+  }, [question, timeMode, timeSeconds, questions.length, isAdmin, advance])
 
   const handleSkip = () => {
-    resultsRef.current.push({ question, selectedIndex: null, correctIndex: 0 })
+    const timeAtSkip = totalCsRef.current - questionStartCsRef.current
+    resultsRef.current.push({ question, selectedIndex: null, correctIndex: 0, timeElapsedCs: timeAtSkip })
     advance()
   }
 
   const handleQuit = () => {
-    onFinish({
-      total: questions.length,
-      correct: correctCountRef.current,
-      timeCs: timerCsRef.current,
-      questions: [...resultsRef.current],
-    })
+    finishGame()
   }
 
   if (!question) {
@@ -113,10 +191,19 @@ export function GameBoard({ questions, onFinish }: GameBoardProps) {
     )
   }
 
+  const timeLimitActive = timeSeconds > 0
+  const displayCs = timeMode === 'per_question' && timeLimitActive
+    ? Math.max(0, remainingCs)
+    : timeLimitActive
+      ? Math.max(0, timeLimitCs - totalCs)
+      : totalCs
+
+  const lastPoints = paused && isAdmin
+    ? calcScore(lastTimeCs, timeMode, timeSeconds, questions.length, lastCorrect)
+    : 0
+
   return (
     <div>
-      <ToastContainer toasts={toasts} onRemove={remove} />
-
       <div className={styles.quitRow}>
         <GameQuitConfirm
           visible={quitVisible}
@@ -127,11 +214,13 @@ export function GameBoard({ questions, onFinish }: GameBoardProps) {
       </div>
 
       <div className={styles.timerRow}>
-        <Timer elapsedCentiseconds={timerCs} />
+        <Timer elapsedCentiseconds={displayCs} />
       </div>
 
       <div className={styles.progress}>
         {correctCountRef.current} {plural(correctCountRef.current, ['ответ', 'ответа', 'ответов'])} из {idx + 1}
+        {timeUp && <span style={{ marginLeft: 12, color: '#FF0000' }}>время вышло</span>}
+        {isAdmin && <span style={{ marginLeft: 12, color: '#6E9A90' }}>счёт: {adminScore}</span>}
       </div>
 
       {question.imageUrl && (
@@ -144,11 +233,26 @@ export function GameBoard({ questions, onFinish }: GameBoardProps) {
       <AnswerGrid
         key={idx}
         answers={question.answers}
-        onAnswer={handleAnswer}
+        onAnswer={paused ? undefined : handleAnswer}
       />
 
+      {paused && (
+        <>
+          {question.note && (
+            <div style={{ marginTop: 12, padding: '10px 14px', background: '#EDEBD2', borderRadius: 6, fontSize: 13, lineHeight: 1.5, color: '#0E2136', fontStyle: 'italic' }}>
+              {question.note}
+            </div>
+          )}
+          {isAdmin && (
+            <div style={{ marginTop: 8, fontSize: 12, color: '#6E9A90' }}>
+              вопрос: +{lastPoints} очков | накоплено: {adminScore}
+            </div>
+          )}
+        </>
+      )}
+
       <div className={styles.skipRow}>
-        <Button variant="ghost" size="sm" onClick={handleSkip}>
+        <Button variant="ghost" size="sm" onClick={handleSkip} disabled={paused}>
           {'\u21BA'} Пропустить
         </Button>
       </div>

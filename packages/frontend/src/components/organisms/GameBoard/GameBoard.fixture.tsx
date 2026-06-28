@@ -11,7 +11,7 @@ const mock = [
 export default function GameBoardFixture() {
   return (
     <Layout activeNav="game" breadcrumbs={[{ label: 'Игра' }, { label: 'Астрономия' }]}>
-      <GameBoard questions={mock} onFinish={(r) => alert(`Игра окончена! ${r.correct}/${r.total} за ${(r.timeCs / 100).toFixed(1)}с`)} />
+      <GameBoard questions={mock} timeMode="per_question" timeSeconds={60} isAdmin onFinish={(r) => alert(`Игра окончена! ${r.correct}/${r.total} за ${(r.timeCs / 100).toFixed(1)}с`)} />
     </Layout>
   )
 }

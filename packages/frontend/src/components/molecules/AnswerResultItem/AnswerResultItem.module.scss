@@ -19,6 +19,14 @@
   flex-shrink: 0;
 }
 
+.points {
+  font-size: 14px;
+  color: $color-accent;
+  flex-shrink: 0;
+  margin-left: auto;
+  font-weight: bold;
+}
+
 .body {
   display: flex;
   gap: 10px;

@@ -180,11 +180,11 @@ export function verifyResetToken(token: string): { valid: boolean; login: string
 export async function resetPassword(input: ResetPasswordInput): Promise<{ login: string; accessToken: string; refreshToken: string; user: UserPublic }> {
   const row = db
     .prepare(`
-      SELECT pr.*, u.login, u.email, u.nickname, u.level, u.icon, u.created_at FROM password_resets pr
+      SELECT pr.*, u.login, u.email, u.nickname, u.level, u.icon, u.is_admin, u.created_at FROM password_resets pr
       JOIN users u ON u.id = pr.user_id
       WHERE pr.token = ? AND pr.used = 0
     `)
-    .get(input.token) as { id: number; user_id: number; expires_at: string; login: string; email: string; nickname: string; level: number; icon: string; created_at: string } | undefined
+    .get(input.token) as { id: number; user_id: number; expires_at: string; login: string; email: string; nickname: string; level: number; icon: string; is_admin: number; created_at: string } | undefined
 
   if (!row) {
     throw new AuthError('INVALID_TOKEN', 'Токен не найден или уже использован', 400)
@@ -219,6 +219,7 @@ export async function resetPassword(input: ResetPasswordInput): Promise<{ login:
       nickname: row.nickname,
       level: row.level,
       icon: row.icon,
+      is_admin: row.is_admin,
       created_at: row.created_at,
     },
   }

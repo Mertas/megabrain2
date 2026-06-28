@@ -1,4 +1,5 @@
 @use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
 
 .breadcrumbs {
   background-color: $color-bg-dark;
@@ -21,4 +22,13 @@
 
 .sep {
   color: $color-text-light;
+}
+
+@include mobile {
+  .breadcrumbs {
+    left: 0;
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
 }
