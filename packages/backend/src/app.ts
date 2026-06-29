@@ -1,3 +1,5 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import express from 'express'
 import cors from 'cors'
 import { authRouter } from './modules/auth/auth.routes.js'
@@ -9,6 +11,8 @@ import { publicRouter } from './modules/public/public.routes.js'
 import { adminRouter } from './modules/admin/admin.routes.js'
 import { usersRouter } from './modules/users/users.routes.js'
 import { pvpRouter } from './modules/pvp/pvp.routes.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export function createApp() {
   const app = express()
@@ -27,6 +31,15 @@ export function createApp() {
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok' })
   })
+
+  // Serve frontend in production (Docker/Render)
+  if (process.env.NODE_ENV === 'production') {
+    const distPath = path.resolve(__dirname, '../../frontend/dist')
+    app.use(express.static(distPath))
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'))
+    })
+  }
 
   app.use(errorHandler)
 

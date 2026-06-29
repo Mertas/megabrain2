@@ -6,7 +6,8 @@
   ],
   "scripts": {
     "dev": "concurrently -n fe,be -c cyan,yellow \"npm run dev -w packages/frontend\" \"npm run dev -w packages/backend\"",
-    "build": "npm run build -w packages/frontend && npm run build -w packages/backend",
+    "build": "npm run build -w packages/backend && npm run build -w packages/frontend",
+    "start": "node packages/backend/dist/index.js",
     "cosmos": "npm run cosmos -w packages/frontend",
     "db:seed": "npm run db:setup -w packages/backend && npm run seed -w packages/backend"
   },
