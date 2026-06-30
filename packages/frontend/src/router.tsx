@@ -6,6 +6,7 @@ import { changePwRoute } from './routes/change-pw'
 import { gameRoute } from './routes/game'
 import { addQRoute, adminRoute, pvpRoute, ratingsRoute } from './routes/misc'
 import { usersListRoute, userRoute } from './routes/users'
+import { notFoundRoute } from './routes/not-found'
 import './styles/global.scss'
 
 const routeTree = rootRoute.addChildren([
@@ -22,11 +23,13 @@ const routeTree = rootRoute.addChildren([
   userRoute,
   pvpRoute,
   ratingsRoute,
+  notFoundRoute, // must be last — catch-all 404
 ])
 
 export const router = createRouter({
   routeTree,
   defaultPreload: false,
+  defaultNotFoundComponent: () => null, // handled by * route
 })
 
 declare module '@tanstack/react-router' {

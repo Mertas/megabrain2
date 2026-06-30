@@ -1,0 +1,57 @@
+body, html {
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  -webkit-transform-style: preserve-3d;
+          transform-style: preserve-3d;
+  -webkit-transform: perspective(800px);
+          transform: perspective(800px);
+}
+
+.poster {
+  width: 288px;
+  height: 570px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -290px 0 0 -144px;
+  border-radius: 5px;
+  box-shadow: 0 15px 10px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+.poster .shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: -webkit-linear-gradient(315deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 60%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 60%);
+  z-index: 100;
+}
+.poster div[class*="layer-"] {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  -webkit-transition: 0.1s;
+          transition: 0.1s;
+}
+.poster_border {
+  display: none;
+  position: absolute;
+  width: 300px;
+  height: 600px;
+  top: 50%;
+  left: 50%;
+  margin: -300px 0 0 -150px;
+  xoutline:1px solid gray;
+}

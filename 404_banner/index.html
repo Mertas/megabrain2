@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  
+  <title></title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+  /*
+    По умолчанию картинка обрезается по 10px со всех сторон для эффекта параллакса.
+    Чтобы картинка не обрезалась, например, если там есть надписи, слою нужно указать:
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  */
+   a.poster .layer-1 {
+      background-image: url("a-1.png");
+      
+    }
+    a.poster .layer-2 {
+      background-image: url("a-2.png");
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    a.poster .layer-3 {
+      background-image: url("a-3.png");
+      top: 20px;
+      right: -20px;
+      left: -20px;
+      bottom: -40px;
+    }
+    a.poster .layer-4 {
+      background-image: url("a-4.png");
+      top: 20px;
+      right: -20px;
+      left: -20px;
+      bottom: -40px;
+    }
+  </style>
+  <script>
+    var shine = 0.5; // сила подсветки при наведении мышкой (от 0 до 1)
+  </script>
+</head>
+
+<body>
+  <!--
+    data-offset у основного слоя отвечает за угол поворот всего баннера
+    data-offset="0" - слой не поворачивается
+  -->
+  <a href="http://dirty.ru" class="poster" data-offset="5">
+    <div class="shine"></div>
+    <!--
+      data-offset - это положение слоя по Z - чем меньше, тем "дальше будет слой.
+      Порядок слоев должен быть по увеличению data-offset.
+      data-offset="0" - слой без параллакса
+    -->
+    <div data-offset="-5" class="layer-1"></div>
+    <div data-offset="2" class="layer-2"></div>
+    <div data-offset="7" class="layer-3"></div>
+    <div data-offset="15" class="layer-4"></div>
+  </a>
+
+  <div class="poster_border"></div>
+
+  <script src='jquery.2.1.3.min.js'></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
