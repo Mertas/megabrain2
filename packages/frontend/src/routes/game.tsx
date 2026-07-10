@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, createRoute } from '@tanstack/react-router'
 import { GameBoard, type GameResult } from '../components/organisms/GameBoard/GameBoard'
 import { GameResults } from '../components/organisms/GameResults/GameResults'
 import { Button } from '../components/atoms/Button/Button'
-import { submitGameResult, type GameScoreResult } from '../lib/api'
+import { Center } from '../components/atoms/Center/Center'
+import { Text } from '../components/atoms/Text/Text'
+import { submitGameResult, fetchPowerupTypes, type GameScoreResult, type PowerupType } from '../lib/api'
 import { getGameStore, setGameStore, clearGameStore } from '../lib/game-store'
 import { useAuth } from '../context/auth'
 import { rootRoute, PageWrap } from './base'
@@ -16,14 +18,23 @@ export const gameRoute = createRoute({
     const n = useNavigate()
     const store = getGameStore()
     const [finished, setFinished] = useState(false)
+    const [powerupTypes, setPowerupTypes] = useState<PowerupType[]>([])
+
+    useEffect(() => {
+      if (store.powerupIds.length > 0) {
+        fetchPowerupTypes().then((all) => {
+          setPowerupTypes(all.filter((t) => store.powerupIds.includes(t.id)))
+        }).catch(() => {})
+      }
+    }, [store.powerupIds])
 
     if (store.questions.length === 0) {
       return (
         <PageWrap activeNav="game" breadcrumbs={[{ label: 'Игра' }, { label: 'Нет вопросов' }]}>
-          <div style={{ textAlign: 'center', padding: 60 }}>
-            <p>Нет вопросов. Начните новую игру.</p>
+          <Center padding={60}>
+            <Text as="p">Нет вопросов. Начните новую игру.</Text>
             <Button variant="primary" size="sm" onClick={() => n({ to: '/' })} style={{ marginTop: 12 }}>Новая игра</Button>
-          </div>
+          </Center>
         </PageWrap>
       )
     }
@@ -59,7 +70,7 @@ export const gameRoute = createRoute({
 
     return (
       <PageWrap activeNav="game" breadcrumbs={[{ label: 'Игра' }, { label: 'Астрономия' }]}>
-        <GameBoard questions={store.questions} timeMode={store.timeMode} timeSeconds={store.timeSeconds} isAdmin={auth.isAdmin} onFinish={handleFinish} />
+        <GameBoard questions={store.questions} timeMode={store.timeMode} timeSeconds={store.timeSeconds} isAdmin={auth.isAdmin} powerups={powerupTypes} onFinish={handleFinish} />
       </PageWrap>
     )
   },

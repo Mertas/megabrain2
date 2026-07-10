@@ -7,6 +7,9 @@ export interface User {
   level: number
   icon: string
   is_admin: number
+  score: number
+  best_survival_score: number
+  best_survival_streak: number
   created_at: string
   updated_at: string
 }
@@ -19,6 +22,9 @@ export interface UserPublic {
   level: number
   icon: string
   is_admin: number
+  score: number
+  best_survival_score: number
+  best_survival_streak: number
   created_at: string
 }
 
@@ -39,6 +45,9 @@ export function toPublic(user: User): UserPublic {
     level: user.level,
     icon: user.icon,
     is_admin: user.is_admin,
+    score: user.score || 0,
+    best_survival_score: user.best_survival_score || 0,
+    best_survival_streak: user.best_survival_streak || 0,
     created_at: user.created_at,
   }
 }

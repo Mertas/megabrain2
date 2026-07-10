@@ -1,0 +1,121 @@
+.quitRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px 14px;
+  background: #EDEBD2;
+  border-radius: 6px;
+}
+
+.lives {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 22px;
+}
+
+.heartFilled {
+  color: #FF0000;
+}
+
+.heartEmpty {
+  color: #CCC;
+}
+
+.extraLifeFlash {
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #FF6633;
+  animation: flashText 0.5s ease-in-out 3;
+}
+
+@keyframes flashText {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.2); }
+}
+
+.score {
+  font-size: 16px;
+  font-weight: 700;
+  color: #182C3F;
+}
+
+.timerRow {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.progress {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  font-size: 14px;
+  color: #5A7184;
+  margin-bottom: 16px;
+}
+
+.streak {
+  font-weight: 700;
+  color: #FF6633;
+}
+
+.difficulty {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.image {
+  text-align: center;
+  margin-bottom: 16px;
+
+  img {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 6px;
+  }
+}
+
+.questionText {
+  font-size: 18px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #0E2136;
+}
+
+.note {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #EDEBD2;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #0E2136;
+  font-style: italic;
+}
+
+.skipRow {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.timeUp {
+  margin-left: 12px;
+  color: #FF0000;
+}
+
+.fiftyFifty {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #F9A253;
+  text-align: center;
+}

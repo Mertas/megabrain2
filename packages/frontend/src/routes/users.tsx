@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams, Link, createRoute } from '@tanstack/react-router'
+import { useNavigate, useParams, createRoute } from '@tanstack/react-router'
 import { UserProfile } from '../components/organisms/UserProfile/UserProfile'
 import { UsersPage } from '../components/organisms/UsersPage/UsersPage'
 import { Spinner } from '../components/atoms/Spinner/Spinner'
 import { fetchUserProfile, updateProfile, ApiError, type UserProfileData } from '../lib/api'
 import { getEloIcon } from '../lib/icons'
 import { useAuth } from '../context/auth'
+import { Center } from '../components/atoms/Center/Center'
 import { rootRoute, PageWrap } from './base'
 
 export const usersListRoute = createRoute({
@@ -37,22 +38,17 @@ export const userRoute = createRoute({
       fetchUserProfile(login).then(setProfile).catch((e) => setError(e instanceof ApiError ? e.message : 'Ошибка')).finally(() => setLoading(false))
     }, [login])
 
-    if (loading) return <PageWrap activeNav="people" breadcrumbs={[{ label: login }]}><div style={{ textAlign: 'center', padding: 60 }}><Spinner size="md" /></div></PageWrap>
-    if (error || !profile) return <PageWrap activeNav="people" breadcrumbs={[{ label: login }]}><div style={{ textAlign: 'center', padding: 60 }}><h2>Не найдено</h2><p style={{ color: '#666' }}>{error || 'Пользователь не существует'}</p></div></PageWrap>
+    if (loading) return <PageWrap activeNav="people" breadcrumbs={[{ label: login }]}><Center padding={60}><Spinner size="md" /></Center></PageWrap>
+    if (error || !profile) return <PageWrap activeNav="people" breadcrumbs={[{ label: login }]}><Center padding={60}><h2>Не найдено</h2><p style={{ color: '#666' }}>{error || 'Пользователь не существует'}</p></Center></PageWrap>
 
     const isOwner = auth.user?.id === profile.id
     return (
       <PageWrap activeNav="people" breadcrumbs={[{ label: profile.nickname || login }]}>
         <UserProfile
-          user={{ level: profile.level, icon: getEloIcon(profile.elo), nickname: profile.nickname, name: profile.name, location: profile.location, firstSeen: profile.firstSeen, topics: profile.topics }}
+          user={{ level: profile.level, icon: getEloIcon(profile.elo), nickname: profile.nickname, name: profile.name, login: profile.login, location: profile.location, firstSeen: profile.firstSeen, topics: profile.topics, stats: profile.stats }}
           isOwner={isOwner}
           onSave={isOwner ? async (d) => { const updated = await updateProfile(profile.id, d); setProfile({ ...profile, ...updated }) } : undefined}
         />
-        {isOwner && (
-          <div style={{ marginTop: 20, fontSize: 10 }}>
-            <Link to="/change-password" style={{ color: '#D4D2BC', borderBottom: '1px dotted #D4D2BC', textDecoration: 'none' }}>сменить пароль</Link>
-          </div>
-        )}
       </PageWrap>
     )
   },

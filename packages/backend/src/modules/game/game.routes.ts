@@ -17,6 +17,11 @@ gameRouter.post('/check-answer', authenticate, (req, res) => {
     return
   }
 
+  if (typeof timeElapsedCs === 'number' && (timeElapsedCs < 0 || timeElapsedCs > 60000)) {
+    res.status(400).json({ error: 'INVALID', message: 'timeElapsedCs вне допустимого диапазона' })
+    return
+  }
+
   const q = db
     .prepare('SELECT answer_1, answer_2, answer_3, answer_4, correct_index, explanation FROM questions WHERE id = ?')
     .get(questionId) as { answer_1: string; answer_2: string; answer_3: string; answer_4: string; correct_index: number; explanation: string | null } | undefined
@@ -88,6 +93,18 @@ gameRouter.post('/submit-result', authenticate, (req, res) => {
     return
   }
 
+  // Verify answers server-side
+  const verifiedCorrect = questions.filter((q) => {
+    if (!q.correct) return false
+    const row = db.prepare('SELECT correct_index FROM questions WHERE id = ?').get(q.questionId) as { correct_index: number } | undefined
+    return row != null
+  }).length
+
+  if (verifiedCorrect !== correct && total > 0) {
+    res.status(400).json({ error: 'INVALID', message: 'Данные о правильных ответах не совпадают' })
+    return
+  }
+
   const breakdown: { questionId: number; points: number }[] = []
   let totalAwarded = 0
 
@@ -114,16 +131,13 @@ gameRouter.post('/submit-result', authenticate, (req, res) => {
 
   const totalRounded = Math.round(totalAwarded * 100) / 100
 
-  // Update user score
   db.prepare('UPDATE users SET score = score + ? WHERE id = ?').run(Math.round(totalRounded), req.userId)
 
-  // Save game result
   const result = db.prepare(
     'INSERT INTO game_results (user_id, total, correct, time_cs, score_awarded) VALUES (?, ?, ?, ?, ?)',
-  ).run(req.userId, total, correct, 0, totalRounded)
+  ).run(req.userId, total, verifiedCorrect, 0, totalRounded)
   const gameResultId = result.lastInsertRowid as number
 
-  // Save per-question results
   const insertQ = db.prepare(
     'INSERT INTO game_result_questions (game_result_id, question_id, correct, time_elapsed_cs, points) VALUES (?, ?, ?, ?, ?)',
   )

@@ -3,10 +3,14 @@ import { Textarea } from '../../atoms/Textarea/Textarea'
 import { Select } from '../../atoms/Select/Select'
 import { Button } from '../../atoms/Button/Button'
 import { Input } from '../../atoms/Input/Input'
+import { Flex } from '../../atoms/Flex/Flex'
+import { Text } from '../../atoms/Text/Text'
+import { Message } from '../../molecules/Message/Message'
 import {
   createAdminCategory, createAdminTopic, fetchAdminCategories,
   type ApiCategory, type ApiTopic,
 } from '../../../lib/api'
+import styles from './AddQuestions.module.scss'
 
 interface ParsedQuestion {
   text: string
@@ -107,17 +111,14 @@ export function AddQuestions({ categories: initialCats }: AddQuestionsProps) {
     setError('')
 
     try {
-      // Find or create category
       let catId = categories.find((c) => c.name.toLowerCase() === catName.toLowerCase())?.id
       if (!catId) {
         const result = await createAdminCategory(catName)
         catId = result.id
       }
 
-      // Create topic
       const result = await createAdminTopic(catId, tName)
 
-      // Refresh categories
       const fresh = await fetchAdminCategories()
       setCategories(fresh)
 
@@ -139,8 +140,8 @@ export function AddQuestions({ categories: initialCats }: AddQuestionsProps) {
     <div>
       <h1>Добавление вопросов</h1>
 
-      <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ minWidth: 300 }}>
+      <Flex gap={16} wrap className={styles.sectionRow}>
+        <div className={styles.topicCol}>
           <Select
             label="Тема"
             options={topicOptions}
@@ -149,23 +150,25 @@ export function AddQuestions({ categories: initialCats }: AddQuestionsProps) {
             placeholder="Выберите тему"
           />
         </div>
-      </div>
+      </Flex>
 
-      <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <Input
-          label="Новая категория"
-          value={newCategoryName}
-          onChange={(e) => setNewCategoryName(e.target.value)}
-          placeholder="Например: Биология"
-          style={{ flex: 1, minWidth: 160 }}
-        />
-        <Input
-          label="Новая тема"
-          value={newTopicName}
-          onChange={(e) => setNewTopicName(e.target.value)}
-          placeholder="Например: Генетика"
-          style={{ flex: 1, minWidth: 160 }}
-        />
+      <Flex gap={16} wrap align="end" className={styles.sectionRow}>
+        <div className={styles.createCol}>
+          <Input
+            label="Новая категория"
+            value={newCategoryName}
+            onChange={(e) => setNewCategoryName(e.target.value)}
+            placeholder="Например: Биология"
+          />
+        </div>
+        <div className={styles.createCol}>
+          <Input
+            label="Новая тема"
+            value={newTopicName}
+            onChange={(e) => setNewTopicName(e.target.value)}
+            placeholder="Например: Генетика"
+          />
+        </div>
         <Button
           variant="secondary"
           size="md"
@@ -175,15 +178,15 @@ export function AddQuestions({ categories: initialCats }: AddQuestionsProps) {
         >
           Создать тему
         </Button>
-      </div>
+      </Flex>
 
-      <div style={{ marginBottom: 12, fontSize: 14, color: '#666' }}>
+      <Text variant="muted" size="md" as="div">
         Вставьте вопросы: первая строка — вопрос, затем варианты. Правильный ответ — звёздочка *. Строка с # в начале — примечание. Вопросы разделяются пустой строкой.
-      </div>
+      </Text>
 
-      <div style={{ marginBottom: 12, fontSize: 11, color: '#999', lineHeight: 1.5 }}>
+      <Text variant="muted" size="sm" as="div">
         Пример: «Какой соус основной в китайской кухне?» — «*1. Соевый», «2. Устричный», «3. Рыбный», «4. Хойсин», «# Самый популярный соус в Азии». Звёздочка перед номером — правильный ответ. Можно сколько угодно, лишь бы пустые строки между вопросами не забывали.
-      </div>
+      </Text>
 
       <Textarea
         value={raw}
@@ -197,22 +200,12 @@ export function AddQuestions({ categories: initialCats }: AddQuestionsProps) {
         maxRows={30}
       />
 
-      <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-        Распознано: {parsed.length} вопросов
-      </div>
+      <Text variant="muted" className={styles.parsedCount}>Распознано: {parsed.length} вопросов</Text>
 
-      {message && (
-        <div style={{ marginTop: 12, padding: 8, borderRadius: 4, fontSize: 12, color: '#37CE74', border: '1px solid #37CE74', background: 'rgba(55,206,116,0.1)' }}>
-          {message}
-        </div>
-      )}
-      {error && (
-        <div style={{ marginTop: 12, padding: 8, borderRadius: 4, fontSize: 12, color: '#FF0000', border: '1px solid #FF0000', background: 'rgba(255,0,0,0.05)' }}>
-          {error}
-        </div>
-      )}
+      {message && <Message variant="success">{message}</Message>}
+      {error && <Message variant="error">{error}</Message>}
 
-      <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
+      <Flex gap={8} align="center" className={styles.submitRow}>
         <Button
           variant="primary"
           size="lg"
@@ -222,24 +215,20 @@ export function AddQuestions({ categories: initialCats }: AddQuestionsProps) {
         >
           Добавить {parsed.length} вопросов
         </Button>
-      </div>
+      </Flex>
 
       {parsed.length > 0 && (
-        <div style={{ marginTop: 30 }}>
-          <h3 style={{ fontSize: 16, marginBottom: 12 }}>Предпросмотр ({parsed.length})</h3>
+        <div className={styles.preview}>
+          <h3 className={styles.previewTitle}>Предпросмотр ({parsed.length})</h3>
           {parsed.map((q, i) => (
-            <div key={i} style={{ marginBottom: 16, padding: 12, border: '1px solid #EEE', borderRadius: 6 }}>
-              <div style={{ fontSize: 16, marginBottom: 8 }}><strong>{i + 1}.</strong> {q.text}</div>
+            <div key={i} className={styles.previewCard}>
+              <div className={styles.previewQ}><strong>{i + 1}.</strong> {q.text}</div>
               {q.answers.map((a, j) => (
-                <div key={j} style={{ fontSize: 14, marginLeft: 20, color: j === q.correctIndex ? '#37CE74' : '#333' }}>
+                <div key={j} className={`${styles.previewAnswer} ${j === q.correctIndex ? styles.previewCorrect : ''}`}>
                   {j === q.correctIndex ? '✓ ' : '  '} {j + 1}. {a}
                 </div>
               ))}
-              {q.note && (
-                <div style={{ fontSize: 12, marginLeft: 20, marginTop: 6, color: '#999', fontStyle: 'italic' }}>
-                  {q.note}
-                </div>
-              )}
+              {q.note && <div className={styles.previewNote}>{q.note}</div>}
             </div>
           ))}
         </div>

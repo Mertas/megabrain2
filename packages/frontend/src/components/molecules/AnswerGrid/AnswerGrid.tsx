@@ -13,9 +13,10 @@ export interface AnswerGridProps {
   bordered?: boolean
   onAnswer?: (answerText: string) => Promise<AnswerCheckResult>
   standalone?: boolean
+  dimmedIndices?: number[]
 }
 
-export function AnswerGrid({ answers, question, bordered = true, onAnswer, standalone = false }: AnswerGridProps) {
+export function AnswerGrid({ answers, question, bordered = true, onAnswer, standalone = false, dimmedIndices = [] }: AnswerGridProps) {
   const [phase, setPhase] = useState<'idle' | 'flash' | 'reveal'>('idle')
   const [selected, setSelected] = useState<number | null>(null)
   const [serverCorrectIndex, setServerCorrectIndex] = useState(-1)
@@ -36,7 +37,6 @@ export function AnswerGrid({ answers, question, bordered = true, onAnswer, stand
     if (onAnswer) {
       const result = await onAnswer(answerText)
       setServerCorrectIndex(answers.indexOf(result.correctAnswer))
-      // Already set to 'reveal' by setTimeout above, but set again in case API is faster
       setPhase('reveal')
     }
   }, [phase, answers, onAnswer])
@@ -89,7 +89,8 @@ export function AnswerGrid({ answers, question, bordered = true, onAnswer, stand
               state={state}
               muted={muted}
               flash={phase === 'flash' && i === selected}
-              onClick={phase === 'idle' ? () => handleClick(i) : undefined}
+              dimmed={dimmedIndices.includes(i)}
+              onClick={phase === 'idle' && !dimmedIndices.includes(i) ? () => handleClick(i) : undefined}
             />
           )
         })}

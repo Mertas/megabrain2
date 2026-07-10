@@ -1,19 +1,26 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { Button } from '../../atoms/Button/Button'
+import { Hero } from '../../molecules/Hero/Hero'
+import { Rules } from '../../molecules/Rules/Rules'
+import { ConfigCard } from '../../molecules/ConfigCard/ConfigCard'
+import { PowerupSelector } from '../../molecules/PowerupSelector/PowerupSelector'
+import { Text } from '../../atoms/Text/Text'
 import { Spinner } from '../../atoms/Spinner/Spinner'
 import { Select } from '../../atoms/Select/Select'
 import { Checkbox } from '../../atoms/Checkbox/Checkbox'
 import { AnswerGrid, type AnswerCheckResult } from '../../molecules/AnswerGrid/AnswerGrid'
 import { Timer } from '../../molecules/Timer/Timer'
 import { Table, type TableColumn } from '../../molecules/Table/Table'
+import { TopicList } from '../TopicList/TopicList'
 import {
-  connect, disconnect, joinQueue, cancelQueue, sendAnswer, getSocket,
+  connect, disconnect, joinQueue, cancelQueue, sendAnswer, getSocket, usePowerup,
   type PvPMatchFound, type PvPResult, type PvPQuestion,
 } from '../../../lib/pvp-socket'
 import {
-  fetchCategories, fetchPvPRatings,
-  type ApiCategory, type PvPRatingEntry, type AdminPageResult,
+  fetchCategories, fetchPvPRatings, fetchPowerupInventory,
+  type ApiCategory, type PvPRatingEntry, type AdminPageResult, type PowerupType,
 } from '../../../lib/api'
+import { PowerupBar, type ActivePowerup } from '../../molecules/PowerupBar/PowerupBar'
 import styles from './PvP.module.scss'
 import { getEloIcon } from '../../../lib/icons'
 
@@ -30,6 +37,12 @@ const timeOptions = [
   { value: '30', label: '30 секунд' },
   { value: '60', label: '1 минута' },
   { value: '0', label: 'без ограничений' },
+]
+
+const pvpRules = [
+  { icon: '\u{1F4CB}', text: 'Общий набор вопросов — оба игрока видят одно и то же одновременно' },
+  { icon: '\u23F1', text: 'Очки за скорость: чем быстрее правильный ответ, тем больше очков за вопрос' },
+  { icon: '\u{1F3C6}', text: 'ELO-рейтинг: побеждайте, чтобы подниматься в таблице лидеров' },
 ]
 
 export interface PvPProps {
@@ -58,21 +71,48 @@ export function PvP(_props: PvPProps) {
   const socketRef = useRef(getSocket())
   const viewRef = useRef(view)
   viewRef.current = view
+  const [powerupTypes, setPowerupTypes] = useState<PowerupType[]>([])
+  const [selectedPowerups, setSelectedPowerups] = useState<string[]>([])
+  const [activePowerups, setActivePowerups] = useState<ActivePowerup[]>([])
 
-  useEffect(() => { fetchCategories().then(setCategories) }, [])
+  useEffect(() => {
+    fetchCategories().then(setCategories)
+    fetchPowerupInventory().then(async (inv) => {
+      const pvpIds = new Set(['freeze', 'shield', 'double-points', 'extra-time', 'peek'])
+      const invIds = inv.inventory.filter((i) => i.quantity > 0 && pvpIds.has(i.powerupId)).map((i) => i.powerupId)
+      const response = await fetch('/api/powerups/types')
+      const allTypes: PowerupType[] = await response.json()
+      setPowerupTypes(allTypes.filter((t) => invIds.includes(t.id)))
+    }).catch(() => {})
+  }, [])
 
-  const topicOptions = categories.flatMap((c) =>
-    c.topics.map((t) => ({ value: String(t.id), label: `${c.name} → ${t.name}` })),
-  )
+  const topicsData = useMemo(() => categories.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    icon: cat.icon,
+    subtopics: cat.topics.map((t) => ({ id: t.id, name: t.name })),
+  })), [categories])
 
   const maxTopics = parseInt(questionCount) === 10 ? 1 : parseInt(questionCount) === 30 ? 2 : 3
 
-  const toggleTopic = (id: number) => {
+  const handleSelectSubtopic = (id: number) => {
     setSelectedTopics((p) => {
       if (p.includes(id)) return p.filter((x) => x !== id)
       if (p.length >= maxTopics) return p
       return [...p, id]
     })
+  }
+
+  const handleSelectAll = (topicId: number) => {
+    const topic = topicsData.find((t) => t.id === topicId)!
+    const ids = topic.subtopics.map((s) => s.id)
+    const allSelected = ids.every((id) => selectedTopics.includes(id))
+    if (allSelected) {
+      setSelectedTopics((prev) => prev.filter((x) => !ids.includes(x)))
+    } else {
+      const toAdd = ids.filter((id) => !selectedTopics.includes(id)).slice(0, maxTopics - selectedTopics.length)
+      if (toAdd.length > 0) setSelectedTopics((prev) => [...prev, ...toAdd])
+    }
   }
 
   const handleJoin = useCallback(() => {
@@ -105,10 +145,22 @@ export function PvP(_props: PvPProps) {
     s.off('pvp:opponent')
     s.off('pvp:opponent-disconnected')
     s.off('pvp:game-result')
+    s.off('pvp:powerup-self')
+    s.off('pvp:powerup-opponent')
 
     s.on('pvp:waiting', () => setView('waiting'))
     s.on('pvp:cancelled', () => { setView('lobby'); disconnect() })
     s.on('pvp:error', (data: { message: string }) => { setError(data.message); setView('lobby') })
+
+    s.on('pvp:powerup-self', (_data: { powerupId: string; effect: string }) => {
+      // Powerup activated by us
+    })
+    s.on('pvp:powerup-opponent', (data: { powerupId: string; effect: string }) => {
+      if (data.powerupId === 'freeze') {
+        // Opponent used freeze — reduce our timer
+        timerCsRef.current = Math.min(timerCsRef.current + 500, parseInt(timePerQ) * 100)
+      }
+    })
 
     s.on('pvp:countdown', (data: { seconds: number }) => {
       if (viewRef.current === 'lobby' || viewRef.current === 'waiting') setView('countdown')
@@ -151,7 +203,7 @@ export function PvP(_props: PvPProps) {
       setView('results')
     })
 
-    joinQueue(selectedTopics, parseInt(questionCount), parseInt(timePerQ), strictTopics)
+    joinQueue(selectedTopics, parseInt(questionCount), parseInt(timePerQ), strictTopics, selectedPowerups)
   }, [selectedTopics, questionCount, timePerQ, strictTopics, maxTopics])
 
   const handleCancel = () => {
@@ -209,11 +261,11 @@ export function PvP(_props: PvPProps) {
     return (
       <div className={styles.center}>
         <Spinner size="lg" />
-        <p style={{ fontSize: 17, marginTop: 20 }}>Поиск соперника...</p>
-        <p style={{ fontSize: 12, color: '#666' }}>
+        <Text as="p" size="lg">Поиск соперника...</Text>
+        <Text as="p" variant="muted">
           {strictTopics ? 'Темы совпадают строго' : 'Любые темы'}, количество вопросов и таймаут совпадают
-        </p>
-        <Button variant="ghost" onClick={handleCancel} style={{ marginTop: 16 }}>Отмена</Button>
+        </Text>
+        <Button variant="ghost" onClick={handleCancel}>Отмена</Button>
       </div>
     )
   }
@@ -222,9 +274,9 @@ export function PvP(_props: PvPProps) {
     return (
       <div className={styles.center}>
         <div className={styles.countdown}>{countdown}</div>
-        <p style={{ fontSize: 14, color: '#666', marginTop: 12 }}>
+        <Text as="p" variant="muted" size="md">
           {match?.opponent.nickname} найден. Игра начнётся через...
-        </p>
+        </Text>
       </div>
     )
   }
@@ -232,39 +284,49 @@ export function PvP(_props: PvPProps) {
   if (view === 'playing' && match) {
     const q = match.questions[qIndex]
     if (!q) {
-      return <div style={{ textAlign: 'center', padding: 60 }}><Spinner size="md" /><p style={{ marginTop: 12 }}>Загрузка вопроса...</p></div>
+      return <div className={styles.center}><Spinner size="md" /><p className={styles.waitText}>Загрузка вопроса...</p></div>
     }
 
     const timeLimitActive = parseInt(timePerQ) > 0
     const displayCs = timeLimitActive ? Math.max(0, parseInt(timePerQ) * 100 - timerCs) : timerCs
 
     return (
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, fontSize: 12 }}>
+      <div className={styles.wrap}>
+        <div className={styles.topBar}>
           <span>Вы: {opponentTotal} отвечено</span>
           <span>{match.opponent.nickname} ({match.opponent.rating}): {opponentAnswers.length} {oppDisconnected && '(откл)'}</span>
         </div>
 
-        <div style={{ textAlign: 'center', marginBottom: 8 }}>
+        <div className={styles.timerRow}>
           <Timer elapsedCentiseconds={displayCs} />
         </div>
 
-        <div style={{ fontSize: 17, marginBottom: 12 }}>
+        <div className={styles.progress}>
           {qIndex + 1}/{match.questions.length} {q.topicName && `· ${q.topicName}`}
         </div>
 
-        <div style={{ fontSize: 17, marginBottom: 12, fontWeight: 'bold' }}>{q.text}</div>
+        <div className={styles.questionText}>{q.text}</div>
 
         <AnswerGrid key={qIndex} answers={q.answers} onAnswer={paused ? undefined : handleAnswer} />
 
         {paused && q.note && (
-          <div style={{ marginTop: 12, padding: '10px 14px', background: '#EDEBD2', borderRadius: 6, fontSize: 13, lineHeight: 1.5, color: '#0E2136', fontStyle: 'italic' }}>
-            {q.note}
-          </div>
+          <div className={styles.note}>{q.note}</div>
         )}
 
         {oppDisconnected && (
-          <div style={{ marginTop: 12, color: '#FF6633', fontSize: 12 }}>Соперник отключился. Если не вернётся — вам засчитают победу.</div>
+          <div className={styles.dcWarning}>Соперник отключился. Если не вернётся — вам засчитают победу.</div>
+        )}
+
+        {selectedPowerups.length > 0 && powerupTypes.length > 0 && (
+          <PowerupBar
+            available={powerupTypes.filter((t) => selectedPowerups.includes(t.id))}
+            active={activePowerups}
+            gameMode="pvp"
+            onActivate={(id) => {
+              setActivePowerups((prev) => [...prev, { type: id, applied: true }])
+              usePowerup(id)
+            }}
+          />
         )}
       </div>
     )
@@ -273,7 +335,7 @@ export function PvP(_props: PvPProps) {
   if (view === 'results' && result && match) {
     return (
       <div>
-        <h1>Результаты PvP</h1>
+        <Text as="h1" variant="heading">Результаты PvP</Text>
 
         <div className={styles.resultHeader}>
           <div>Вы</div>
@@ -284,7 +346,7 @@ export function PvP(_props: PvPProps) {
           <div className={styles.scoreBlock}>
             <div className={styles.scoreValue}>{result.yourScore}</div>
             <div className={styles.scoreLabel}>очков</div>
-            <div className={styles.eloChange} style={{ color: result.yourEloChange >= 0 ? '#37CE74' : '#FF0000' }}>
+            <div className={`${styles.eloChange} ${result.yourEloChange >= 0 ? styles.eloUp : styles.eloDown}`}>
               {result.yourEloChange >= 0 ? '+' : ''}{result.yourEloChange} ELO
             </div>
           </div>
@@ -292,27 +354,27 @@ export function PvP(_props: PvPProps) {
           <div className={styles.scoreBlock}>
             <div className={styles.scoreValue}>{result.opponentScore}</div>
             <div className={styles.scoreLabel}>очков</div>
-            <div className={styles.eloChange} style={{ color: -result.yourEloChange >= 0 ? '#37CE74' : '#FF0000' }}>
+            <div className={`${styles.eloChange} ${ -result.yourEloChange >= 0 ? styles.eloUp : styles.eloDown}`}>
               {result.yourEloChange >= 0 ? '' : '+'}{-result.yourEloChange} ELO
             </div>
           </div>
         </div>
 
-        <h2 style={{ fontSize: 17, marginTop: 24, marginBottom: 12 }}>По вопросам</h2>
+        <h2 className={styles.bdownTitle}>По вопросам</h2>
         {result.breakdown.map((b, i) => (
           <div key={i} className={styles.breakRow}>
             <span className={styles.qNum}>{i + 1}.</span>
-            <span className={styles.qMine} style={{ color: b.correct ? '#37CE74' : '#FF0000' }}>
+            <span className={`${styles.qMine} ${b.correct ? styles.ok : styles.fail}`}>
               {b.yourAnswer || '—'}
             </span>
-            <span className={styles.qOpp} style={{ color: b.opponentCorrect ? '#37CE74' : '#FF0000' }}>
+            <span className={`${styles.qOpp} ${b.opponentCorrect ? styles.ok : styles.fail}`}>
               {b.opponentAnswer || '—'}
             </span>
             <span className={styles.qPts}>{b.yourPoints}</span>
           </div>
         ))}
 
-        <div style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'center' }}>
+        <div className={styles.actions}>
           <Button variant="primary" onClick={handleBackToLobby}>В лобби</Button>
         </div>
       </div>
@@ -323,52 +385,48 @@ export function PvP(_props: PvPProps) {
   const canJoin = selectedTopics.length === maxTopics
 
   return (
-    <div>
-      <h1>PvP</h1>
+      <div className={styles.wrap}>
+      <Hero icon={'\u2694\uFE0F'} title="PvP" description="Сразитесь с живым соперником. Одинаковые вопросы, одновременные ответы — побеждает самый эрудированный."       />
 
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 12, color: '#666', marginBottom: 8 }}>Выберите {maxTopics} тем{maxTopics > 1 ? 'ы' : 'у'}</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
-          {topicOptions.map((opt) => {
-            const selected = selectedTopics.includes(Number(opt.value))
-            const disabled = !selected && selectedTopics.length >= maxTopics
-            return (
-              <Button
-                key={opt.value}
-                variant={selected ? 'primary' : 'ghost'}
-                size="sm"
-                disabled={disabled}
-                onClick={() => toggleTopic(Number(opt.value))}
-              >
-                {opt.label}
-              </Button>
-            )
-          })}
-        </div>
+      <Rules items={pvpRules} />
 
-        <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
-          <div style={{ flex: 1 }}>
+      <div>
+        <div className={styles.topicHint}>Выберите {maxTopics} тем{maxTopics > 1 ? 'ы' : 'у'}</div>
+        <TopicList
+          topics={topicsData}
+          selectedIds={selectedTopics}
+          onSelectSubtopic={handleSelectSubtopic}
+          onSelectAll={handleSelectAll}
+        />
+
+        <ConfigCard>
+          <div className={styles.configRow}>
+          <div className={styles.configCol}>
             <Select label="Вопросов" hint="10 — короткая разминка. 30 — уже серьёзно. 50 — проверка на выносливость. Всё как в обычной жизни, только про эрудицию." options={qtyOptions} value={questionCount} onChange={(e) => { setQuestionCount(e.target.value); setSelectedTopics([]) }} />
           </div>
-          <div style={{ flex: 1 }}>
+          <div className={styles.configCol}>
             <Select label="Таймаут на вопрос" hint="Сколько секунд у вас есть, чтобы вспомнить. Если не знаете — время подскажет, что пора нажимать наугад." options={timeOptions} value={timePerQ} onChange={(e) => setTimePerQ(e.target.value)} />
           </div>
         </div>
 
-        <div style={{ marginTop: 12 }}>
+        <div className={styles.strictBlock}>
           <Checkbox label="Тема должна совпадать" checked={strictTopics} onChange={(e) => setStrictTopics(e.target.checked)} />
-          <div style={{ fontSize: 10, color: '#999', marginTop: 4, lineHeight: 1.4 }}>Включите, чтобы играть строго по выбранным темам. Выключите — и соперник может принести свои. Вдруг у него интереснее.</div>
+          <div className={styles.strictHint}>Включите, чтобы играть строго по выбранным темам. Выключите — и соперник может принести свои. Вдруг у него интереснее.</div>
         </div>
+        </ConfigCard>
       </div>
 
-      <Button variant="primary" size="lg" fullWidth disabled={!canJoin} onClick={handleJoin}>
-        Искать соперника
-      </Button>
-      {error && (
-        <div style={{ marginTop: 12, padding: 8, borderRadius: 4, fontSize: 12, color: '#FF0000', border: '1px solid #FF0000', background: 'rgba(255,0,0,0.05)' }}>
-          {error}
-        </div>
+      {powerupTypes.length > 0 && (
+        <PowerupSelector types={powerupTypes} selected={selectedPowerups} onChange={setSelectedPowerups} />
       )}
+
+      <div className={styles.joinAction}>
+        <Button variant="primary" size="lg" disabled={!canJoin} onClick={handleJoin}>Искать соперника</Button>
+        <Button variant="link" size="sm" onClick={() => window.location.href = '/ratings'}>
+          {'\u{1F3C6}'} Таблица лидеров
+        </Button>
+      </div>
+      {error && <div className={styles.error}>{error}</div>}
     </div>
   )
 }
@@ -390,7 +448,7 @@ export function PvPRatings() {
 
   const columns: TableColumn<PvPRatingEntry>[] = [
     { key: 'rank', label: '#', width: '40px' },
-    { key: 'icon', label: '', width: '30px', render: (r) => <span style={{ fontSize: 20 }}>{getEloIcon(r.rating)}</span> },
+    { key: 'icon', label: '', width: '30px', render: (r) => <span className={styles.ratingIcon}>{getEloIcon(r.rating)}</span> },
     { key: 'nickname', label: 'Игрок', render: (r) => r.nickname || r.login },
     { key: 'rating', label: 'ELO', width: '70px' },
     { key: 'wins', label: 'Победы', width: '60px' },
@@ -400,10 +458,10 @@ export function PvPRatings() {
 
   return (
     <div>
-      <h1 style={{ fontSize: 24, marginBottom: 16 }}>Рейтинг</h1>
+      <h1 className={styles.ratingTitle}>Рейтинг PvP</h1>
       <Table columns={columns} data={data?.items || []} rowKey={(r) => r.userId} loading={loading} />
       {data && data.pages > 1 && (
-        <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginTop: 16 }}>
+        <div className={styles.ratingPagination}>
           {Array.from({ length: data.pages }, (_, i) => (
             <Button key={i} variant={page === i + 1 ? 'primary' : 'ghost'} size="sm" onClick={() => setPage(i + 1)}>
               {i + 1}

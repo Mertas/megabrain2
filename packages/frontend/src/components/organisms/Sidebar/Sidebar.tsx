@@ -6,16 +6,19 @@ import styles from './Sidebar.module.scss'
 
 const navRouteMap: Record<string, string> = {
   game: '/',
+  survival: '/survival',
+  blitz: '/blitz',
   pvp: '/pvp',
   questions: '/questions/add',
   people: '/users',
   ratings: '/ratings',
+  powerups: '/powerups',
   admin: '/admin',
 }
 
 const publicKeys: NavKey[] = ['game', 'people', 'ratings']
-const loggedInKeys: NavKey[] = ['game', 'pvp', 'questions', 'people', 'ratings']
-const adminKeys: NavKey[] = ['game', 'pvp', 'questions', 'people', 'ratings', 'admin']
+const loggedInKeys: NavKey[] = ['game', 'survival', 'blitz', 'pvp', 'questions', 'people', 'ratings', 'powerups']
+const adminKeys: NavKey[] = ['game', 'survival', 'blitz', 'pvp', 'questions', 'people', 'ratings', 'powerups', 'admin']
 
 export interface SidebarProps {
   activeNav: string

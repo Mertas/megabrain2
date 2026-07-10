@@ -8,6 +8,9 @@ export interface UserPublic {
   level: number
   icon: string
   is_admin: number
+  score: number
+  best_survival_score: number
+  best_survival_streak: number
   created_at: string
 }
 
@@ -403,15 +406,50 @@ export interface UserProfileData {
   location: string
   firstSeen: string
   topics: { name: string; subtopics: string[] }[]
-  stats: {
-    questionsAuthored: number
+  stats: ProfileStats
+}
+
+export interface ProfileStats {
+  questionsAuthored: number
+  totalGames: number
+  totalQuestions: number
+  totalCorrect: number
+  overallAccuracy: number
+  solo: {
     gamesPlayed: number
     totalQuestions: number
     totalCorrect: number
     accuracy: number
+    avgScore: number
     totalScore: number
-    recent: { id: number; total: number; correct: number; score: number; date: string }[]
   }
+  pvp: {
+    gamesPlayed: number
+    wins: number
+    losses: number
+    draws: number
+    rating: number
+  }
+  blitz: {
+    gamesPlayed: number
+    wins: number
+    losses: number
+    draws: number
+    rating: number
+  }
+  survival: {
+    gamesPlayed: number
+    totalQuestions: number
+    totalCorrect: number
+    accuracy: number
+    avgScore: number
+    totalScore: number
+    bestScore: number
+    bestStreak: number
+  }
+  gamesByFormat: { format: string; count: number; label: string }[]
+  authoredByCategory: { category: string; total: number; topics: { topic: string; count: number }[] }[]
+  recent: { id: number; format: string; total: number; correct: number; score: number; date: string }[]
 }
 
 export interface UserListItem {
@@ -490,4 +528,202 @@ export async function fetchPvPRatings(page = 1): Promise<AdminPageResult<PvPRati
 export async function fetchPvPHistory(login: string, page = 1): Promise<AdminPageResult<PvPHistoryEntry>> {
   const params = new URLSearchParams({ page: String(page), limit: '20' })
   return request(`/pvp/history/${encodeURIComponent(login)}?${params}`)
+}
+
+// --------------- Survival API ---------------
+
+export interface SurvivalConfig {
+  initialLives: number
+  initialTimeSeconds: number
+  minTimeSeconds: number
+  timeDecreasePerCorrect: number
+  streakMultiplierStep: number
+  streakMultiplierMax: number
+  easyThreshold: number
+  mediumThreshold: number
+  extraLifeEvery: number
+  maxLives: number
+}
+
+export interface SurvivalQuestion {
+  id: number
+  text: string
+  imageUrl: string | null
+  answers: string[]
+  note: string | null
+}
+
+export interface SurvivalStartResult {
+  sessionId: string
+  question: SurvivalQuestion
+  questionNumber: number
+  timeLimitSeconds: number
+  lives: number
+  streak: number
+  score: number
+  difficulty: string
+}
+
+export interface SurvivalAnswerResult {
+  gameOver: boolean
+  correct: boolean
+  correctAnswer: string
+  explanation: string | null
+  pointsAwarded?: number
+  totalScore?: number
+  lives?: number
+  streak?: number
+  streakMultiplier?: number
+  extraLifeAwarded?: boolean
+  nextQuestion?: SurvivalQuestion
+  questionNumber?: number
+  timeLimitSeconds?: number
+  difficulty?: string
+  summary?: SurvivalSummary
+}
+
+export interface SurvivalSummary {
+  totalQuestions: number
+  correctAnswers: number
+  wrongAnswers: number
+  maxStreak: number
+  finalStreak: number
+  totalScore: number
+  difficultyReached: string
+  isNewPersonalBestScore: boolean
+  isNewPersonalBestStreak: boolean
+  rank: number | null
+}
+
+export interface SurvivalLeaderboardEntry {
+  rank: number
+  userId: number
+  nickname: string
+  score: number
+  maxStreak: number
+  totalQuestions: number
+  date: string
+}
+
+export interface SurvivalLeaderboardResult {
+  period: string
+  entries: SurvivalLeaderboardEntry[]
+  userRank: { rank: number; score: number } | null
+}
+
+export async function fetchSurvivalConfig(): Promise<SurvivalConfig> {
+  return request('/survival/config')
+}
+
+export async function startSurvival(topicIds: number[]): Promise<SurvivalStartResult> {
+  return request('/survival/start', {
+    method: 'POST',
+    body: JSON.stringify({ topicIds }),
+  })
+}
+
+export async function answerSurvival(data: {
+  sessionId: string
+  questionId: number
+  answer: string
+  timeElapsedCs: number
+  powerup?: string
+}): Promise<SurvivalAnswerResult> {
+  return request('/survival/answer', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function finishSurvival(sessionId: string): Promise<{ saved: boolean; summary?: SurvivalSummary; message?: string }> {
+  return request('/survival/finish', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId }),
+  })
+}
+
+export async function fetchSurvivalLeaderboard(period: 'all' | 'weekly' | 'daily' = 'all', limit = 50): Promise<SurvivalLeaderboardResult> {
+  const params = new URLSearchParams({ period, limit: String(limit) })
+  return request(`/survival/leaderboard?${params}`)
+}
+
+// --------------- Blitz API ---------------
+
+export interface BlitzRatingEntry {
+  rank: number
+  userId: number
+  login: string
+  nickname: string
+  icon: string
+  rating: number
+  wins: number
+  losses: number
+  draws: number
+}
+
+export interface BlitzHistoryEntry {
+  id: number
+  opponent: { login: string; nickname: string }
+  won: boolean
+  draw: boolean
+  yourScore: number
+  opponentScore: number
+  eloChange: number
+  roundCount: number
+  date: string
+}
+
+export async function fetchBlitzRatings(page = 1): Promise<AdminPageResult<BlitzRatingEntry>> {
+  const params = new URLSearchParams({ page: String(page), limit: '50' })
+  return request(`/blitz/ratings?${params}`)
+}
+
+export async function fetchBlitzHistory(login: string, page = 1): Promise<AdminPageResult<BlitzHistoryEntry>> {
+  const params = new URLSearchParams({ page: String(page), limit: '20' })
+  return request(`/blitz/history/${encodeURIComponent(login)}?${params}`)
+}
+
+// --------------- Power-ups API ---------------
+
+export interface PowerupType {
+  id: string
+  name: string
+  description: string
+  category: string
+  cost: number
+  max_per_game: number
+  available_in: string
+  icon: string
+}
+
+export interface UserPowerup {
+  powerupId: string
+  quantity: number
+}
+
+export interface PowerupInventoryResult {
+  inventory: UserPowerup[]
+  score: number
+}
+
+export async function fetchPowerupTypes(): Promise<PowerupType[]> {
+  return request('/powerups/types')
+}
+
+export async function fetchPowerupInventory(): Promise<PowerupInventoryResult> {
+  return request('/powerups/inventory')
+}
+
+export async function buyPowerup(powerupId: string, quantity = 1): Promise<{ ok: boolean; newScore?: number }> {
+  return request('/powerups/buy', {
+    method: 'POST',
+    body: JSON.stringify({ powerupId, quantity }),
+  })
+}
+
+export async function usePowerup(powerupId: string, gameMode: string, gameId?: number): Promise<{ ok: boolean; effect: { type: string; name: string; icon: string } }> {
+  return request('/powerups/use', {
+    method: 'POST',
+    body: JSON.stringify({ powerupId, gameMode, gameId }),
+  })
 }

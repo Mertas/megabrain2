@@ -3,6 +3,7 @@ import { Input } from '../../atoms/Input/Input'
 import { Button } from '../../atoms/Button/Button'
 import { Tooltip } from '../../atoms/Tooltip/Tooltip'
 import { checkPassword } from '../../../lib/passwordStrength'
+import { StrengthBar } from '../../molecules/StrengthBar/StrengthBar'
 import styles from './AuthForm.module.scss'
 
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset'
@@ -72,8 +73,8 @@ export function AuthForm({ mode, onSubmit, onSwitchMode, error, fieldErrors = {}
               onChange={(e) => { setLogin(e.target.value); clearField('login') }}
               placeholder="Введите логин"
               error={allErrors.login}
-              fullWidth
-              size="lg"
+              fullWidth size="lg"
+              data-testid="auth-login"
               hint={mode === 'register' ? 'Не меньше трёх символов. Исключительно больше.' : mode === 'forgot' ? 'Логин, который вы указывали при регистрации.' : 'Ваш логин — вы с ним регистрировались, он везде у вас выводится.'}
             />
           )}
@@ -85,8 +86,8 @@ export function AuthForm({ mode, onSubmit, onSwitchMode, error, fieldErrors = {}
               onChange={(e) => { setEmail(e.target.value); clearField('email') }}
               placeholder="Введите email"
               error={allErrors.email}
-              fullWidth
-              size="lg"
+              fullWidth size="lg"
+              data-testid="auth-email"
               hint="Есть старая система для восстановления доступа: вы вводите сейчаc почту, а если вдруг забудете пароль, то мы дальше через эту почту всё и вернём."
             />
           )}
@@ -111,7 +112,7 @@ export function AuthForm({ mode, onSubmit, onSwitchMode, error, fieldErrors = {}
               delay={200}
               fullWidth
             >
-              <div style={{ width: '100%' }}>
+              <div className={styles.inputWrap}>
                 <Input
                   label="Пароль"
                   type="password"
@@ -119,20 +120,11 @@ export function AuthForm({ mode, onSubmit, onSwitchMode, error, fieldErrors = {}
                   onChange={(e) => { setPassword(e.target.value); clearField('password') }}
                   placeholder="Введите пароль"
                   error={allErrors.password}
-                  fullWidth
-                  size="lg"
+                  fullWidth size="lg"
+                  data-testid="auth-password"
                   hint="Как обычно, у нас есть правила по паролям. Длина там, сложность, ну, мы подскажем, если что."
                 />
-                {strength && (
-                  <div className={styles.strength}>
-                    <div className={styles.strengthBar}>
-                      {[0, 1, 2, 3, 4].map((i) => (
-                        <div key={i} className={styles.strengthSeg} style={{ background: i <= strength.score ? strength.color : '#E0E0E0' }} />
-                      ))}
-                    </div>
-                    <span className={styles.strengthLabel} style={{ color: strength.color }}>{strength.label}</span>
-                  </div>
-                )}
+                {strength && <StrengthBar strength={strength} />}
               </div>
             </Tooltip>
           ) : needsPassword ? (
@@ -144,26 +136,17 @@ export function AuthForm({ mode, onSubmit, onSwitchMode, error, fieldErrors = {}
                 onChange={(e) => { setPassword(e.target.value); clearField('password') }}
                 placeholder="Введите пароль"
                 error={allErrors.password}
-                fullWidth
-                size="lg"
+                fullWidth size="lg"
+                data-testid="auth-password"
                 hint={mode === 'reset' ? 'Придумайте что-нибудь посложнее, чем «123456».' : 'Если забыли, есть кнопка внизу.'}
               />
-              {strength && mode === 'reset' && (
-                <div className={styles.strength}>
-                  <div className={styles.strengthBar}>
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <div key={i} className={styles.strengthSeg} style={{ background: i <= strength.score ? strength.color : '#E0E0E0' }} />
-                    ))}
-                  </div>
-                  <span className={styles.strengthLabel} style={{ color: strength.color }}>{strength.label}</span>
-                </div>
-              )}
+              {strength && mode === 'reset' && <StrengthBar strength={strength} />}
             </div>
           ) : null}
           {error && !Object.keys(fieldErrors).length && (
             <div className={styles.error}>{error}</div>
           )}
-          <Button type="submit" variant="primary" fullWidth size="lg">
+          <Button type="submit" variant="primary" fullWidth size="lg" data-testid="auth-submit">
             {btnText}
           </Button>
         </form>

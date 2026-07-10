@@ -78,7 +78,7 @@ export function TopicCard({
         <span className={styles.count}>({selectedCount}/{topic.subtopics.length})</span>
       </h3>
       <div className={styles.selectAll}>
-        <button type="button" className={styles.selectAllBtn} onClick={onSelectAll}>
+        <button type="button" className={styles.selectAllBtn} onClick={onSelectAll} data-testid="select-all-topics">
           {allSelected ? 'отменить все' : 'выбрать все'}
         </button>
       </div>

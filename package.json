@@ -9,7 +9,8 @@
     "build": "npm run build -w packages/backend && npm run build -w packages/frontend",
     "start": "node packages/backend/dist/index.js",
     "cosmos": "npm run cosmos -w packages/frontend",
-    "db:seed": "npm run db:setup -w packages/backend && npm run seed -w packages/backend"
+    "db:seed": "npm run db:setup -w packages/backend && npm run seed -w packages/backend",
+    "interactive": "node scripts/interactive.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"

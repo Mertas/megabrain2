@@ -6,7 +6,10 @@ import { changePwRoute } from './routes/change-pw'
 import { gameRoute } from './routes/game'
 import { addQRoute, adminRoute, pvpRoute, ratingsRoute } from './routes/misc'
 import { usersListRoute, userRoute } from './routes/users'
-import { notFoundRoute } from './routes/not-found'
+import { survivalRoute, survivalLeaderboardRoute } from './routes/survival'
+import { blitzRoute } from './routes/blitz'
+import { powerupsRoute } from './routes/powerups'
+import { NotFoundPage } from './routes/not-found'
 import './styles/global.scss'
 
 const routeTree = rootRoute.addChildren([
@@ -23,13 +26,16 @@ const routeTree = rootRoute.addChildren([
   userRoute,
   pvpRoute,
   ratingsRoute,
-  notFoundRoute, // must be last — catch-all 404
+  survivalRoute,
+  survivalLeaderboardRoute,
+  blitzRoute,
+  powerupsRoute,
 ])
 
 export const router = createRouter({
   routeTree,
   defaultPreload: false,
-  defaultNotFoundComponent: () => null, // handled by * route
+  defaultNotFoundComponent: NotFoundPage,
 })
 
 declare module '@tanstack/react-router' {

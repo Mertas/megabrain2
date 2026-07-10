@@ -76,8 +76,8 @@ export function disconnect(): void {
   }
 }
 
-export function joinQueue(topicIds: number[], questionCount: number, timePerQuestion: number, strictTopics: boolean): void {
-  socket?.emit('pvp:join', { topicIds, questionCount, timePerQuestion, strictTopics })
+export function joinQueue(topicIds: number[], questionCount: number, timePerQuestion: number, strictTopics: boolean, powerupIds: string[] = []): void {
+  socket?.emit('pvp:join', { topicIds, questionCount, timePerQuestion, strictTopics, powerupIds })
 }
 
 export function cancelQueue(): void {
@@ -86,6 +86,10 @@ export function cancelQueue(): void {
 
 export function sendAnswer(questionIndex: number, answer: string, timeElapsedCs: number): void {
   socket?.emit('pvp:answer', { questionIndex, answer, timeElapsedCs })
+}
+
+export function usePowerup(powerupId: string): void {
+  socket?.emit('pvp:use-powerup', { powerupId })
 }
 
 export function rematch(): void {

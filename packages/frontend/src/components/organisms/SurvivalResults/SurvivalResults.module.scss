@@ -1,0 +1,111 @@
+.wrap {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.banner {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #182C3F;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: #5A7184;
+  line-height: 1.5;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.statCard {
+  background: #EDEBD2;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: #182C3F;
+}
+
+.statLabel {
+  font-size: 13px;
+  color: #5A7184;
+  margin-top: 4px;
+}
+
+.details {
+  background: #EDEBD2;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  color: #182C3F;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.green {
+  color: #2D7A4F;
+  font-weight: 700;
+}
+
+.red {
+  color: #CC3A3A;
+  font-weight: 700;
+}
+
+.gold {
+  color: #F9A253;
+  font-weight: 700;
+}
+
+.records {
+  text-align: center;
+  padding: 16px;
+  background: #EDEBD2;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.recordTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #182C3F;
+  margin-bottom: 8px;
+}
+
+.recordItem {
+  font-size: 14px;
+  color: #F9A253;
+  font-weight: 600;
+  margin: 4px 0;
+}

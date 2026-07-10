@@ -147,14 +147,9 @@ export function forgotPassword(input: ForgotPasswordInput): void {
     expiresAt,
   )
 
-  console.log('')
-  console.log('═══════════════════════════════════════════════')
-  console.log('[RESET LINK]')
-  console.log(`http://localhost:5173/reset-password?token=${token}`)
-  console.log(`Expires: ${new Date(expiresAt).toLocaleString('ru-RU')}`)
-  console.log(`User: ${user.login} (${user.email})`)
-  console.log('═══════════════════════════════════════════════')
-  console.log('')
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[RESET] Link generated for ${user.login}`)
+  }
 }
 
 export function verifyResetToken(token: string): { valid: boolean; login: string } {
@@ -212,15 +207,6 @@ export async function resetPassword(input: ResetPasswordInput): Promise<{ login:
     login: row.login,
     accessToken,
     refreshToken,
-    user: {
-      id: row.user_id,
-      login: row.login,
-      email: row.email,
-      nickname: row.nickname,
-      level: row.level,
-      icon: row.icon,
-      is_admin: row.is_admin,
-      created_at: row.created_at,
-    },
+    user: toPublic(findUserById(row.user_id)!),
   }
 }

@@ -1,107 +1,78 @@
-@use '../../../styles/variables' as *;
+.wrap { max-width: 650px; margin: 0 auto; padding: 24px 0; }
 
-.resultHeader {
-  display: flex;
-  justify-content: space-around;
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
+// Lobby
+.hero { text-align: center; margin-bottom: 20px;
+  h1 { font-size: 26px; font-weight: 700; color: #182C3F; margin-bottom: 8px; }
+}
+.topicHint { font-size: 12px; color: #666; margin-bottom: 8px; }
+.topicGrid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.configRow { display: flex; gap: 16px; margin-top: 16px; }
+.configCol { flex: 1; }
+.strictBlock { margin-top: 12px; }
+.strictHint { font-size: 10px; color: #999; margin-top: 4px; line-height: 1.4; }
+
+// Powerup selector
+.powerupSelector { padding: 12px 14px; background: #EDEBD2; border-radius: 8px; margin-top: 16px; }
+.powerupTitle { font-size: 13px; color: #182C3F; font-weight: 600; margin-bottom: 8px; }
+.powerupGrid { display: flex; gap: 8px; flex-wrap: wrap; }
+.powerupBtn {
+  padding: 6px 10px; border: 1px solid #CCC; border-radius: 6px; background: #fff;
+  cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 4px;
+  &:disabled { opacity: 0.4; cursor: default; }
+  &.selected { border-color: #F9A253; background: #FFF8F0; }
+}
+.powerupKey { font-size: 12px; color: #5A7184; margin-top: 8px; }
+.error { margin-top: 12px; padding: 8px; border-radius: 4px; font-size: 12px; color: #FF0000; border: 1px solid #FF0000; background: rgba(255,0,0,0.05); }
+
+// Waiting
+.center { text-align: center; padding: 60px 0; }
+.countdown { font-size: 72px; color: #F9A253; font-weight: bold; line-height: 1; }
+.waitText { font-size: 14px; color: #666; margin-top: 12px; }
+
+// Playing
+.topBar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 8px 14px; background: #EDEBD2; border-radius: 6px; font-size: 12px; }
+.timerRow { text-align: center; margin-bottom: 8px; }
+.progress { font-size: 17px; margin-bottom: 12px; color: #182C3F; }
+.questionText { font-size: 17px; margin-bottom: 12px; font-weight: bold; color: #0E2136; }
+.note { margin-top: 12px; padding: 10px 14px; background: #EDEBD2; border-radius: 6px; font-size: 13px; line-height: 1.5; color: #0E2136; font-style: italic; }
+.dcWarning { margin-top: 12px; color: #FF6633; font-size: 12px; }
+
+// Results
+.resultHeader { display: flex; justify-content: space-around; font-size: 14px; color: #666; margin-bottom: 8px; }
+.resultScores { display: flex; justify-content: center; align-items: center; gap: 24px; margin-bottom: 16px; }
+.scoreBlock { text-align: center; }
+.scoreValue { font-size: 36px; color: #F9A253; font-weight: bold; }
+.scoreLabel { font-size: 12px; color: #666; }
+.scoreVs { font-size: 14px; color: #999; font-weight: bold; }
+.eloChange { font-size: 13px; margin-top: 4px; }
+.eloUp { color: #37CE74; }
+.eloDown { color: #FF0000; }
+.eloNeutral { color: #666; }
+.bdownTitle { font-size: 17px; margin-top: 24px; margin-bottom: 12px; }
+.breakRow { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid #EDEBD2; font-size: 13px; align-items: center; }
+.qNum { width: 30px; color: #999; }
+.qMine { flex: 1; text-align: right; }
+.qOpp { flex: 1; text-align: left; }
+.qPts { width: 50px; text-align: right; color: #666; font-size: 11px; }
+.ok { color: #37CE74; }
+.fail { color: #FF0000; }
+.actions { display: flex; gap: 12px; margin-top: 24px; justify-content: center; }
+
+// Opponent indicator
+.oppIndicator { display: flex; gap: 4px; font-size: 10px; }
+.oppDot { width: 8px; height: 8px; border-radius: 50%; background: #EDEBD2;
+  &.answered { background: #F9A253; }
+  &.disconnected { background: #CC3A3A; }
 }
 
-.resultScores {
+// Ratings page
+.ratingIcon { font-size: 20px; }
+.ratingTitle { font-size: 24px; margin-bottom: 16px; color: #182C3F; font-weight: 700; }
+.ratingPagination { display: flex; gap: 4px; justify-content: center; margin-top: 16px; }
+
+.joinAction {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  gap: 24px;
-  margin-bottom: 16px;
-}
-
-.scoreBlock {
-  text-align: center;
-}
-
-.scoreValue {
-  font-size: 36px;
-  color: $color-accent;
-  font-weight: bold;
-}
-
-.scoreLabel {
-  font-size: 12px;
-  color: #666;
-}
-
-.scoreVs {
-  font-size: 14px;
-  color: #999;
-  font-weight: bold;
-}
-
-.eloChange {
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-.breakRow {
-  display: flex;
   gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid $color-border;
-  font-size: 13px;
-  align-items: center;
-}
-
-.qNum {
-  width: 30px;
-  color: #999;
-}
-
-.qMine {
-  flex: 1;
-  text-align: right;
-}
-
-.qOpp {
-  flex: 1;
-  text-align: left;
-}
-
-.qPts {
-  width: 50px;
-  text-align: right;
-  color: #666;
-  font-size: 11px;
-}
-
-.center {
-  text-align: center;
-  padding: 60px 0;
-}
-
-.countdown {
-  font-size: 72px;
-  color: $color-accent;
-  font-weight: bold;
-  line-height: 1;
-}
-
-.oppIndicator {
-  display: flex;
-  gap: 4px;
-  font-size: 10px;
-}
-
-.oppDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: $color-border;
-
-  &.answered {
-    background: $color-accent;
-  }
-
-  &.disconnected {
-    background: $color-error;
-  }
 }

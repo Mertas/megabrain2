@@ -1,0 +1,28 @@
+.row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.num {
+  width: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #182C3F;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #C5C9CD;
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+
+  &:focus {
+    border-color: #F9A253;
+  }
+}

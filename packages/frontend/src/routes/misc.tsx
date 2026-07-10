@@ -3,6 +3,7 @@ import { AddQuestions } from '../components/organisms/AddQuestions/AddQuestions'
 import { AdminPage } from '../components/organisms/AdminPage/AdminPage'
 import { PvP, PvPRatings } from '../components/organisms/PvP/PvP'
 import { useAuth } from '../context/auth'
+import { Center } from '../components/atoms/Center/Center'
 import { rootRoute, PageWrap } from './base'
 
 export const addQRoute = createRoute({
@@ -23,7 +24,7 @@ export const adminRoute = createRoute({
   path: '/admin',
   component: function AdminPageRoute() {
     const auth = useAuth()
-    if (!auth.isAdmin) return <PageWrap activeNav="admin" breadcrumbs={[{ label: 'Доступ запрещён' }]}><div style={{ textAlign: 'center', padding: 60 }}>Требуются права администратора</div></PageWrap>
+    if (!auth.isAdmin) return <PageWrap activeNav="admin" breadcrumbs={[{ label: 'Доступ запрещён' }]}><Center padding={60}>Требуются права администратора</Center></PageWrap>
     return <PageWrap activeNav="admin" breadcrumbs={[{ label: 'Админка' }]}><AdminPage /></PageWrap>
   },
 })

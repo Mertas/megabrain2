@@ -1,9 +1,16 @@
 import { z } from 'zod'
 
+const passwordSchema = z.string()
+  .min(8, 'Пароль должен быть не менее 8 символов')
+  .max(100)
+  .regex(/[A-ZА-Я]/, 'Пароль должен содержать хотя бы одну заглавную букву')
+  .regex(/[a-zа-я]/, 'Пароль должен содержать хотя бы одну строчную букву')
+  .regex(/[0-9]/, 'Пароль должен содержать хотя бы одну цифру')
+
 export const registerSchema = z.object({
   login: z.string().min(3).max(30),
   email: z.string().email(),
-  password: z.string().min(6).max(100),
+  password: passwordSchema,
 })
 
 export const loginSchema = z.object({
@@ -26,7 +33,7 @@ export const verifyResetTokenSchema = z.object({
 
 export const resetPasswordSchema = z.object({
   token: z.string().min(1),
-  password: z.string().min(6).max(100),
+  password: passwordSchema,
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>

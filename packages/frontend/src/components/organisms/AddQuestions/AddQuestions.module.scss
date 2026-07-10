@@ -1,0 +1,34 @@
+.sectionRow { margin-bottom: 20px; }
+.topicCol { min-width: 300px; }
+.createCol { flex: 1; min-width: 160px; }
+.submitRow { margin-top: 16px; }
+.parsedCount { margin-top: 8px; }
+
+.preview { margin-top: 30px; }
+.previewTitle { font-size: 16px; margin-bottom: 12px; color: #182C3F; font-weight: 600; }
+.previewCard {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid #EDEBD2;
+  border-radius: 6px;
+}
+.previewQ {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #182C3F;
+  line-height: 1.4;
+}
+.previewAnswer {
+  font-size: 14px;
+  margin-left: 20px;
+  color: #333;
+  line-height: 1.5;
+}
+.previewCorrect { color: #2D7A4F; font-weight: 600; }
+.previewNote {
+  font-size: 12px;
+  margin-left: 20px;
+  margin-top: 6px;
+  color: #999;
+  font-style: italic;
+}

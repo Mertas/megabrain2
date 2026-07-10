@@ -1,17 +1,28 @@
 import { db } from './connection.js'
 import bcrypt from 'bcryptjs'
 
+const ADMIN_LOGIN = process.env.ADMIN_LOGIN || 'admin'
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@megabrain.ru'
+
 export function seed(): void {
-  // Ensure admin user exists
-  const existingAdmin = db.prepare('SELECT id FROM users WHERE login = ?').get('Mertas') as { id: number } | undefined
+  const existingAdmin = db.prepare('SELECT id FROM users WHERE login = ?').get(ADMIN_LOGIN) as { id: number } | undefined
   if (!existingAdmin) {
-    const pw = bcrypt.hashSync('admin123', 10)
+    if (!ADMIN_PASSWORD) {
+      console.warn('[SEED] ADMIN_PASSWORD not set — skipping admin user creation. Set ADMIN_PASSWORD env var to create an admin.')
+      return
+    }
+    if (ADMIN_PASSWORD.length < 8) {
+      console.warn('[SEED] ADMIN_PASSWORD too short (min 8 chars) — skipping admin user creation')
+      return
+    }
+    const pw = bcrypt.hashSync(ADMIN_PASSWORD, 10)
     db.prepare('INSERT INTO users (login, email, password, nickname, level, icon, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?)').run(
-      'Mertas', 'admin@megabrain.ru', pw, 'Mertas', 99, '\u2655', 1,
+      ADMIN_LOGIN, ADMIN_EMAIL, pw, ADMIN_LOGIN, 99, '\u2655', 1,
     )
-    console.log('[SEED] Admin user created: Mertas / admin123')
+    console.log(`[SEED] Admin user created: ${ADMIN_LOGIN}`)
   } else {
-    db.prepare('UPDATE users SET is_admin = 1 WHERE login = ?').run('Mertas')
+    db.prepare('UPDATE users SET is_admin = 1 WHERE login = ?').run(ADMIN_LOGIN)
   }
   const topicCount = (db.prepare('SELECT COUNT(*) as c FROM topics').get() as { c: number }).c
   if (topicCount >= 20) {

@@ -9,7 +9,13 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "cosmos": "cosmos",
-    "cosmos:build": "cosmos-export"
+    "cosmos:build": "cosmos-export",
+    "test:e2e": "npm run seed:test-users --prefix ../backend && cypress open",
+    "test:e2e:run": "cypress run",
+    "test:e2e:seed": "npm run seed:test-users -w ../backend",
+    "test:auth": "npm run seed:test-users --prefix ../backend && cypress run --spec \"cypress/e2e/01-auth.cy.ts\"",
+    "test:game": "npm run seed:test-users --prefix ../backend && cypress run --spec \"cypress/e2e/02-solo-game.cy.ts\"",
+    "test:all": "npm run seed:test-users --prefix ../backend && cypress run"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.1",
@@ -28,6 +34,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/zxcvbn": "^4.4.5",
     "@vitejs/plugin-react": "^6.0.2",
+    "cypress": "^15.18.0",
     "oxlint": "^1.69.0",
     "react-cosmos": "^7.3.0",
     "react-cosmos-plugin-vite": "^7.3.0",

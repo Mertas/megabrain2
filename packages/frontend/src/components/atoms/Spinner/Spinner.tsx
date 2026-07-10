@@ -17,9 +17,7 @@ export function Spinner({ size = 'md', color, label = 'Загрузка...', inl
       role="status"
       aria-label={label}
     >
-      <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>
-        {label}
-      </span>
+      <span className={styles.srOnly}>{label}</span>
     </span>
   )
 }

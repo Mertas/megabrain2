@@ -23,6 +23,7 @@ export const indexRoute = createRoute({
         questions: qs.map((q) => ({ id: q.id, text: q.text, imageUrl: q.image_url || undefined, answers: q.answers, correctIndex: -1, note: q.note || undefined })),
         timeMode: config.timeMode,
         timeSeconds: config.timeValueSeconds,
+        powerupIds: config.powerupIds,
         result: null,
         scoreResult: null,
       })

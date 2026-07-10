@@ -6,6 +6,8 @@ import { joinQueue, leaveQueue, isInQueue, findMatch, getPlayerGame } from './pv
 import { createGame, getOpponentUserId, recordAnswer, calculateResults, startQuestionTimer, clearGameTimer } from './pvp.engine.js'
 import type { PvPGame, PvPQuestion } from './pvp.types.js'
 
+const isDev = process.env.NODE_ENV !== 'production'
+
 interface AuthSocket extends Socket {
   userId?: number
   login?: string
@@ -14,7 +16,12 @@ interface AuthSocket extends Socket {
 
 export function createPvPServer(httpServer: HttpServer): SocketServer {
   const io = new SocketServer(httpServer, {
-    cors: { origin: true, credentials: true },
+    cors: {
+      origin: isDev
+        ? ['http://localhost:5173', 'http://localhost:3001', 'http://localhost:4173']
+        : (process.env.CORS_ORIGIN || '').split(',').filter(Boolean),
+      credentials: true,
+    },
     path: '/pvp-socket',
   })
 
@@ -41,7 +48,7 @@ export function createPvPServer(httpServer: HttpServer): SocketServer {
     console.log(`[PvP] ${socket.login} connected`)
 
     // Join queue
-    socket.on('pvp:join', (data: { topicIds: number[]; questionCount: number; timePerQuestion: number; strictTopics: boolean }) => {
+    socket.on('pvp:join', (data: { topicIds: number[]; questionCount: number; timePerQuestion: number; strictTopics: boolean; powerupIds?: string[] }) => {
       if (isInQueue(uid) || getPlayerGame(uid)) {
         socket.emit('pvp:error', { message: 'Уже в очереди или в игре' })
         return
@@ -59,6 +66,7 @@ export function createPvPServer(httpServer: HttpServer): SocketServer {
         questionCount: data.questionCount,
         timePerQuestion: data.timePerQuestion,
         strictTopics: data.strictTopics,
+        powerupIds: data.powerupIds || [],
         joinedAt: Date.now(),
       })
 
@@ -99,7 +107,20 @@ export function createPvPServer(httpServer: HttpServer): SocketServer {
       }
     })
 
-    // Rematch
+    // Powerup
+    socket.on('pvp:use-powerup', (data: { powerupId: string }) => {
+      const game = getPlayerGame(uid)
+      if (!game) { socket.emit('pvp:error', { message: 'Нет активной игры' }); return }
+
+      const oppId = getOpponentUserId(game, uid)
+      const oppSocket = findSocket(io, oppId)
+
+      if (data.powerupId === 'freeze' && oppSocket) {
+        // Opponent loses 5 seconds on current question
+        oppSocket.emit('pvp:powerup-opponent', { powerupId: 'freeze', effect: 'Соперник заморозил ваш таймер на 5 сек!' })
+        socket.emit('pvp:powerup-self', { powerupId: 'freeze', effect: 'Заморозка активирована' })
+      }
+    })
     socket.on('pvp:rematch', () => {
       const game = getPlayerGame(uid)
       if (game) return // Still in a game

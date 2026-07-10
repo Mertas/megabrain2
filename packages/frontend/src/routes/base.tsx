@@ -1,9 +1,9 @@
+import { useEffect, type ReactNode } from 'react'
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 import { TooltipProvider } from '../components/atoms/Tooltip/Tooltip'
 import { Layout } from '../components/organisms/Layout/Layout'
 import { useToast } from '../components/molecules/ToastContainer/ToastContainer'
 import { useAuth } from '../context/auth'
-import type { ReactNode } from 'react'
 
 function RootLayout() {
   const { toasts, remove, ToastContainer } = useToast()
@@ -25,6 +25,12 @@ export function PageWrap({ children, activeNav, breadcrumbs }: {
   breadcrumbs: { label: string }[]
 }) {
   const auth = useAuth()
+
+  useEffect(() => {
+    const title = breadcrumbs.map((b) => b.label).join(' : ')
+    document.title = title ? `Megabrain2 — ${title}` : 'Megabrain2'
+  }, [breadcrumbs])
+
   return (
     <Layout
       activeNav={activeNav}

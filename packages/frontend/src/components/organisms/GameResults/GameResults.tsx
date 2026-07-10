@@ -1,4 +1,5 @@
 import { AnswerResultItem } from '../../molecules/AnswerResultItem/AnswerResultItem'
+import { Text } from '../../atoms/Text/Text'
 import type { GameResult } from '../GameBoard/GameBoard'
 import styles from './GameResults.module.scss'
 
@@ -24,7 +25,7 @@ export function GameResults({ result, score }: GameResultsProps) {
 
   return (
     <div>
-      <h1>Результаты игры</h1>
+      <Text as="h1" variant="heading" data-testid="hero-title">Результаты игры</Text>
 
       <div className={styles.header}>
         <span className={styles.headerText}>{header}</span>

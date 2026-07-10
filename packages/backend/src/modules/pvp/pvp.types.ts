@@ -7,6 +7,7 @@ export interface PvPQueueEntry {
   questionCount: number
   timePerQuestion: number
   strictTopics: boolean
+  powerupIds: string[]
   joinedAt: number
 }
 
@@ -25,6 +26,7 @@ export interface PvPGame {
   disconnect1: ReturnType<typeof setTimeout> | null
   disconnect2: ReturnType<typeof setTimeout> | null
   countdownInterval: ReturnType<typeof setInterval> | null
+  powerups: Map<number, { shield: boolean; doublePoints: boolean; freezeApplied: boolean; extraTime: number }>
 }
 
 export interface PvPQuestion {

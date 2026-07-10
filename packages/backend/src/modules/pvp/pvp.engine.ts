@@ -8,8 +8,8 @@ let nextGameId = 1
 export function createGame(p1: { userId: number; login: string; nickname: string; rating: number }, p2: { userId: number; login: string; nickname: string; rating: number }, questions: PvPQuestion[], topicIds: number[], questionCount: number, timePerQuestion: number): PvPGame {
   const game: PvPGame = {
     id: nextGameId++,
-    player1: { ...p1, topicIds, questionCount, timePerQuestion, strictTopics: false, joinedAt: 0 },
-    player2: { ...p2, topicIds, questionCount, timePerQuestion, strictTopics: false, joinedAt: 0 },
+    player1: { ...p1, topicIds, questionCount, timePerQuestion, strictTopics: false, joinedAt: 0, powerupIds: [] },
+    player2: { ...p2, topicIds, questionCount, timePerQuestion, strictTopics: false, joinedAt: 0, powerupIds: [] },
     questions,
     questionCount,
     timePerQuestion,
@@ -21,7 +21,10 @@ export function createGame(p1: { userId: number; login: string; nickname: string
     disconnect1: null,
     disconnect2: null,
     countdownInterval: null,
+    powerups: new Map(),
   }
+  game.powerups.set(p1.userId, { shield: false, doublePoints: false, freezeApplied: false, extraTime: 0 })
+  game.powerups.set(p2.userId, { shield: false, doublePoints: false, freezeApplied: false, extraTime: 0 })
   addGame(game)
   return game
 }

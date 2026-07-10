@@ -1,11 +1,15 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { TopicList } from '../TopicList/TopicList'
+import { Hero } from '../../molecules/Hero/Hero'
+import { Rules } from '../../molecules/Rules/Rules'
+import { ConfigCard } from '../../molecules/ConfigCard/ConfigCard'
 import { TimeSettingRow } from '../../molecules/TimeSettingRow/TimeSettingRow'
 import { TimeEstimator } from '../../molecules/TimeEstimator/TimeEstimator'
 import { Checkbox } from '../../atoms/Checkbox/Checkbox'
 import { Select } from '../../atoms/Select/Select'
 import { Button } from '../../atoms/Button/Button'
-import { Divider } from '../../atoms/Divider/Divider'
+import { PowerupSelector } from '../../molecules/PowerupSelector/PowerupSelector'
+import { fetchPowerupTypes, type PowerupType } from '../../../lib/api'
 import type { Topic } from '../../molecules/TopicCard/TopicCard'
 import type { ApiCategory, SavedGameConfig } from '../../../lib/api'
 import styles from './NewGameForm.module.scss'
@@ -16,6 +20,7 @@ export interface GameConfig {
   timeValueSeconds: number
   questionCount: number
   onlyNew: boolean
+  powerupIds: string[]
 }
 
 export interface NewGameFormProps {
@@ -48,6 +53,13 @@ const qtyOptions = [
   { value: '0', label: 'все вопросы' },
 ]
 
+const soloRules = [
+  { icon: '\u23F1', text: 'Очки зависят от скорости: чем быстрее ответ, тем больше очков (до 10 за вопрос)' },
+  { icon: '\u{1F525}', text: 'Серия правильных ответов даёт множитель очков (стрик)' },
+  { icon: '\u{1F4CA}', text: 'Время можно задать на вопрос или на всю игру целиком' },
+  { icon: '\u{1F3AF}', text: 'Выберите количество вопросов и темы — игра подберёт случайные вопросы' },
+]
+
 export function NewGameForm({ categories, lastConfig, onStart }: NewGameFormProps) {
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [timeMode, setTimeMode] = useState<'per_question' | 'per_game'>('per_question')
@@ -55,16 +67,21 @@ export function NewGameForm({ categories, lastConfig, onStart }: NewGameFormProp
   const [questionCount, setQuestionCount] = useState('10')
   const [onlyNew, setOnlyNew] = useState(false)
   const initialized = useRef(false)
+  const [powerupTypes, setPowerupTypes] = useState<PowerupType[]>([])
+  const [selectedPowerups, setSelectedPowerups] = useState<string[]>([])
+
+  useEffect(() => {
+    fetchPowerupTypes().then((types) => {
+      setPowerupTypes(types.filter((t) => t.category === 'utility' || t.category === 'defensive'))
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!lastConfig || initialized.current) return
     initialized.current = true
-
-    // Restore selected topics (only those that still exist)
     const currentTopicIds = new Set(categories.flatMap((c) => c.topics.map((t) => t.id)))
     const validIds = lastConfig.subtopicIds.filter((id) => currentTopicIds.has(id))
     if (validIds.length > 0) setSelectedIds(validIds)
-
     setTimeMode(lastConfig.timeMode)
     setTimeValue(lastConfig.timeValue)
     setQuestionCount(lastConfig.questionCount)
@@ -72,9 +89,7 @@ export function NewGameForm({ categories, lastConfig, onStart }: NewGameFormProp
   }, [lastConfig, categories])
 
   const topics: Topic[] = useMemo(() => categories.map((cat) => ({
-    id: cat.id,
-    name: cat.name,
-    icon: cat.icon,
+    id: cat.id, name: cat.name, icon: cat.icon,
     subtopics: cat.topics.map((t) => ({ id: t.id, name: t.name })),
   })), [categories])
 
@@ -99,11 +114,10 @@ export function NewGameForm({ categories, lastConfig, onStart }: NewGameFormProp
   const handleStart = () => {
     if (selectedIds.length === 0) return
     onStart({
-      subtopicIds: selectedIds,
-      timeMode,
+      subtopicIds: selectedIds, timeMode,
       timeValueSeconds: parseInt(timeValue) || 0,
-      questionCount: parseInt(questionCount) || 0,
-      onlyNew,
+      questionCount: parseInt(questionCount) || 0, onlyNew,
+      powerupIds: selectedPowerups,
     })
   }
 
@@ -111,8 +125,10 @@ export function NewGameForm({ categories, lastConfig, onStart }: NewGameFormProp
   const qtyForEstimate = parseInt(questionCount) || selectedQ
 
   return (
-    <div>
-      <h1 className={styles.title}>Новая игра</h1>
+    <div className={styles.wrap}>
+      <Hero icon="§" title="Новая игра" description="Классическая викторина. Выберите темы, настройте время и количество вопросов." />
+
+      <Rules items={soloRules} />
 
       <TopicList
         topics={topics}
@@ -122,59 +138,38 @@ export function NewGameForm({ categories, lastConfig, onStart }: NewGameFormProp
         totalQuestions={totalQ}
       />
 
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Время</h2>
-        <p className={styles.sectionDesc}>
+      <ConfigCard>
+        <Select label="Количество вопросов" hint="Сколько вопросов будет в игре. 10 — быстрая разминка, 50 — марафон, 100 — на весь вечер." options={qtyOptions} value={questionCount} onChange={(e) => setQuestionCount(e.target.value)} data-testid="question-count" />
+
+        <div className={styles.optionsRow}>
+          <Checkbox label="Только новые" checked={onlyNew} onChange={(e) => setOnlyNew(e.target.checked)} />
+          {selectedQ > 0 && (
+            <span className={styles.selectedInfo}>Выбрано подтем: {selectedIds.length} · доступно вопросов: {selectedQ}</span>
+          )}
+        </div>
+
+        <p className={styles.estimate}>
           {timeMode === 'per_question' && parseInt(timeValue) > 0 && (
-            <span><TimeEstimator mode="per_question" timeSeconds={parseInt(timeValue)} totalItems={qtyForEstimate} /></span>
+            <TimeEstimator mode="per_question" timeSeconds={parseInt(timeValue)} totalItems={qtyForEstimate} />
           )}
           {timeMode === 'per_game' && parseInt(timeValue) > 0 && (
-            <span><TimeEstimator mode="per_game" timeSeconds={parseInt(timeValue)} totalItems={qtyForEstimate} /></span>
+            <TimeEstimator mode="per_game" timeSeconds={parseInt(timeValue)} totalItems={qtyForEstimate} />
           )}
-          {parseInt(timeValue) === 0 && 'Без ограничений'}
+          {parseInt(timeValue) === 0 && 'Без ограничения времени'}
         </p>
 
-        <TimeSettingRow
-          name="timing"
-          label="На вопрос"
-          options={timePerQ}
-          defaultChecked={timeMode === 'per_question'}
-          value={timeValue}
-          onTimeChange={(v) => { setTimeMode('per_question'); setTimeValue(v) }}
-        />
+        <TimeSettingRow name="timing" label="На вопрос" options={timePerQ} defaultChecked={timeMode === 'per_question'} value={timeValue} onTimeChange={(v) => { setTimeMode('per_question'); setTimeValue(v) }} />
+        <TimeSettingRow name="timing" label="На игру" options={timePerG} defaultChecked={timeMode === 'per_game'} value={timeValue} onTimeChange={(v) => { setTimeMode('per_game'); setTimeValue(v) }} />
+      </ConfigCard>
 
-        <div className={styles.divider}><Divider label="или" /></div>
-
-        <TimeSettingRow
-          name="timing"
-          label="На игру"
-          options={timePerG}
-          defaultChecked={timeMode === 'per_game'}
-          value={timeValue}
-          onTimeChange={(v) => { setTimeMode('per_game'); setTimeValue(v) }}
-        />
-      </div>
-
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Вопросы</h2>
-        <div className={styles.optionsRow}>
-          <div className={styles.qtyCol}>
-            <Select options={qtyOptions} value={questionCount} onChange={(e) => setQuestionCount(e.target.value)} size="lg" fullWidth />
-          </div>
-          <div className={styles.checkCol}>
-            <Checkbox label="Только новые" checked={onlyNew} onChange={(e) => setOnlyNew(e.target.checked)} />
-          </div>
-        </div>
-        {selectedQ > 0 && (
-          <div className={styles.selectedInfo}>
-            Выбрано подтем: {selectedIds.length} · доступно вопросов: {selectedQ}
-          </div>
-        )}
-      </div>
+      {powerupTypes.length > 0 && (
+        <PowerupSelector types={powerupTypes} selected={selectedPowerups} onChange={setSelectedPowerups} />
+      )}
 
       <div className={styles.actions}>
-        <Button variant="primary" size="lg" onClick={handleStart} disabled={!canStart}>
-          СТАРТ!
+        <Button variant="primary" size="lg" onClick={handleStart} disabled={!canStart} data-testid="solo-start">Начать игру</Button>
+        <Button variant="link" size="sm" onClick={() => window.location.href = '/powerups'}>
+          {'\u2728'} Магазин Power-ups
         </Button>
         {!canStart && <div className={styles.hint}>Выберите хотя бы одну подтему</div>}
       </div>

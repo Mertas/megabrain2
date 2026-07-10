@@ -22,6 +22,7 @@ export function TimeSettingRow({ label, name, options, defaultChecked, hint, val
         options={options}
         value={value}
         onChange={onTimeChange ? (e) => onTimeChange(e.target.value) : undefined}
+        data-testid="time-select"
       />
       {hint && <span className={styles.hint}>{hint}</span>}
     </div>

@@ -27,7 +27,7 @@ export function UsersPage({ onNavigate }: UsersPageProps) {
   useEffect(() => { load() }, [load])
 
   const columns: TableColumn<UserListItem>[] = [
-    { key: 'icon', label: '', width: '30px', render: (u) => <span style={{ fontSize: 30 }}>{getEloIcon(u.elo)}</span> },
+    { key: 'icon', label: '', width: '30px', render: (u) => <span className={styles.icon}>{getEloIcon(u.elo)}</span> },
     { key: 'login', label: 'Логин', render: (u) => (
       <a href={`/users/${u.login}`} onClick={(e) => { e.preventDefault(); onNavigate?.(`profile:${u.login}`) }}>
         {u.nickname || u.login}

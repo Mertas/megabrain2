@@ -15,6 +15,11 @@ export default defineConfig({
         ws: true,
         changeOrigin: true,
       },
+      '/blitz-socket': {
+        target: 'http://localhost:3001',
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
 })

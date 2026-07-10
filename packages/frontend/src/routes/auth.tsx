@@ -4,6 +4,7 @@ import { AuthForm } from '../components/organisms/AuthForm/AuthForm'
 import { useToast } from '../components/molecules/ToastContainer/ToastContainer'
 import { ApiError } from '../lib/api'
 import { useAuth } from '../context/auth'
+import { Center } from '../components/atoms/Center/Center'
 import { rootRoute, PageWrap } from './base'
 
 /* /login */
@@ -121,9 +122,9 @@ export const resetRoute = createRoute({
 
     return (
       <PageWrap activeNav="game" breadcrumbs={[{ label: 'Новый пароль' }]}>
-        {!token ? <div style={{ textAlign: 'center', padding: 40 }}>Нет токена.</div>
-        : valid === null ? <div style={{ textAlign: 'center', padding: 40 }}>Проверяем ссылку...</div>
-        : valid === false ? <div style={{ textAlign: 'center', padding: 40 }}><h2 style={{ fontSize: 19, color: '#FF0000' }}>Ссылка протухла</h2><p style={{ fontSize: 14, color: '#666', marginBottom: 20 }}>{jokes[Math.floor(Math.random() * jokes.length)]}</p></div>
+        {!token ? <Center padding={40}>Нет токена.</Center>
+        : valid === null ? <Center padding={40}>Проверяем ссылку...</Center>
+        : valid === false ? <Center padding={40}><h2 style={{ fontSize: 19, color: '#FF0000' }}>Ссылка протухла</h2><p style={{ fontSize: 14, color: '#666', marginBottom: 20 }}>{jokes[Math.floor(Math.random() * jokes.length)]}</p></Center>
         : <AuthForm mode="reset" onSubmit={async (d) => {
           setError(undefined); setFieldErrs({})
           try {

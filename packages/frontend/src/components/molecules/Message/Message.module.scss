@@ -1,0 +1,31 @@
+.msg {
+  margin-top: 12px;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid;
+}
+
+.success {
+  color: #2D7A4F;
+  border-color: #2D7A4F;
+  background: rgba(45, 122, 79, 0.1);
+}
+
+.error {
+  color: #CC3A3A;
+  border-color: #CC3A3A;
+  background: rgba(204, 58, 58, 0.08);
+}
+
+.info {
+  color: #5A7184;
+  border-color: #5A7184;
+  background: rgba(90, 113, 132, 0.08);
+}
+
+.warning {
+  color: #F9A253;
+  border-color: #F9A253;
+  background: rgba(249, 162, 83, 0.1);
+}

@@ -7,13 +7,15 @@
 }
 
 .timerRow {
-  height: 33px;
+  text-align: center;
+  margin-bottom: 12px;
 }
 
 .progress {
-  color: $color-accent;
-  font-size: $font-size-sm;
-  margin: 0 0 12px;
+  text-align: center;
+  color: #5A7184;
+  font-size: 14px;
+  margin: 0 0 16px;
 }
 
 .image {
@@ -27,16 +29,57 @@
 }
 
 .question {
-  font-size: $font-size-xl;
+  font-size: 18px;
+  line-height: 1.5;
+  text-align: center;
   padding: 10px 0 0;
-  margin: 0 0 12px;
+  margin: 0 0 20px;
   overflow: hidden;
+  color: #0E2136;
 }
 
 .skipRow {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.note {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #EDEBD2;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #0E2136;
+  font-style: italic;
+}
+
+.powerupFeedback {
+  margin-top: 4px;
+  font-size: 13px;
+  text-align: center;
+  color: #F9A253;
+}
+
+.powerupGreen {
+  color: #2D7A4F;
+}
+
+.adminScore {
   margin-top: 8px;
+  font-size: 12px;
+  color: #6E9A90;
+}
+
+.timeUp {
+  margin-left: 12px;
+  color: #FF0000;
+}
+
+.adminIndicator {
+  margin-left: 12px;
+  color: #6E9A90;
 }
 
 @include mobile {
