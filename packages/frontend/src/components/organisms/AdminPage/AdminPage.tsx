@@ -262,7 +262,7 @@ function UsersTab() {
     { key: 'level', label: 'Уровень', width: '60px' },
     {
       key: 'admin', label: 'Админ', width: '70px',
-      render: (u) => <span style={{ color: u.is_admin ? '#37CE74' : '#999' }}>{u.is_admin ? 'да' : 'нет'}</span>,
+      render: (u) => <span style={{ color: u.is_admin ? 'var(--color-success)' : 'var(--color-neutral)' }}>{u.is_admin ? 'да' : 'нет'}</span>,
     },
     {
       key: 'actions', label: '', width: '100px',

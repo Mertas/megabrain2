@@ -7,6 +7,8 @@ import {
 } from '../../../lib/api'
 import styles from './PowerupShop.module.scss'
 import { PageHeader } from '../../molecules/PageHeader/PageHeader'
+import { Center } from '../../atoms/Center/Center'
+import { Spinner } from '../../atoms/Spinner/Spinner'
 
 function modeName(availableIn: string): string {
   const map: Record<string, string> = {
@@ -72,7 +74,7 @@ export function PowerupShop() {
     return acc
   }, {} as Record<string, PowerupType[]>)
 
-  if (loading) return <div className={styles.loading}>Загрузка...</div>
+  if (loading) return <Center padding={60}><Spinner size="md" /></Center>
 
   return (
     <div className={styles.wrap}>

@@ -257,7 +257,7 @@ export function SurvivalBoard({
   }
 
   const diffLabels: Record<string, string> = { easy: 'Лёгкий', medium: 'Средний', hard: 'Сложный' }
-  const diffColors: Record<string, string> = { easy: '#6E9A90', medium: '#F9A253', hard: '#FF6633' }
+  const diffColors: Record<string, string> = { easy: 'var(--color-muted)', medium: 'var(--color-primary)', hard: 'var(--color-accent)' }
 
   const hearts = []
   for (let i = 0; i < 5; i++) hearts.push(i < lives)
@@ -283,7 +283,7 @@ export function SurvivalBoard({
       <div className={styles.progress}>
         <span>Вопрос {questionNumber}</span>
         <span className={styles.streak}>Стрик: {streak} {streak >= 5 ? '\u{1F525}' : ''}</span>
-        <span className={styles.difficulty} style={{ color: diffColors[difficulty] || '#888' }}>{diffLabels[difficulty] || difficulty}</span>
+        <span className={styles.difficulty} style={{ color: diffColors[difficulty] || 'var(--color-neutral)' }}>{diffLabels[difficulty] || difficulty}</span>
         {timeUp && <span className={styles.timeUp}>время вышло</span>}
       </div>
 

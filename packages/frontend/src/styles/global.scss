@@ -7,6 +7,30 @@
 @use 'reset';
 
 // ============================================================
+// Палитра как CSS-переменные — единственный источник для inline-стилей в TSX.
+// Значения берутся из _variables.scss, чтобы scss и tsx не расходились.
+// ============================================================
+:root {
+  --color-accent: #{$color-accent};
+  --color-primary: #{$color-primary};
+  --color-success: #{$color-success};
+  --color-error: #{$color-error};
+  --color-muted: #{$color-muted};
+  --color-text: #{$color-text};
+  --color-text-dark: #{$color-text-dark};
+  --color-text-soft: #{$color-text-soft};
+  --color-text-grey: #666666;
+  --color-neutral: #999999;
+  --color-border: #{$color-border};
+  --color-bg-dark: #{$color-bg-dark};
+  --color-bg-light: #{$color-bg-light};
+  --color-mode-solo: #{$color-mode-solo};
+  --color-mode-pvp: #{$color-mode-pvp};
+  --color-mode-blitz: #{$color-mode-blitz};
+  --color-mode-survival: #{$color-mode-survival};
+}
+
+// ============================================================
 // Utility classes
 // ============================================================
 

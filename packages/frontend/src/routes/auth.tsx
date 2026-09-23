@@ -124,7 +124,7 @@ export const resetRoute = createRoute({
       <PageWrap route="reset">
         {!token ? <Center padding={40}>Нет токена.</Center>
         : valid === null ? <Center padding={40}>Проверяем ссылку...</Center>
-        : valid === false ? <Center padding={40}><h2 style={{ fontSize: 19, color: '#FF0000' }}>Ссылка протухла</h2><p style={{ fontSize: 14, color: '#666', marginBottom: 20 }}>{jokes[Math.floor(Math.random() * jokes.length)]}</p></Center>
+        : valid === false ? <Center padding={40}><h2 style={{ fontSize: 19, color: 'var(--color-error)' }}>Ссылка протухла</h2><p style={{ fontSize: 14, color: 'var(--color-text-grey)', marginBottom: 20 }}>{jokes[Math.floor(Math.random() * jokes.length)]}</p></Center>
         : <AuthForm mode="reset" onSubmit={async (d) => {
           setError(undefined); setFieldErrs({})
           try {

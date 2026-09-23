@@ -8,6 +8,7 @@ import { FieldNote } from '../../atoms/FieldNote/FieldNote'
 import { SearchCheck } from '../../molecules/SearchCheck/SearchCheck'
 import type { Topic } from '../../molecules/TopicCard/TopicCard'
 import { PageHeader } from '../../molecules/PageHeader/PageHeader'
+import styles from './NewQuestionForm.module.scss'
 
 export interface NewQuestionFormProps {
   topics: Topic[]
@@ -65,7 +66,7 @@ export function NewQuestionForm({ topics: _topics, onSubmit }: NewQuestionFormPr
         <FieldNote>*в разумных пределах, конечно ;)</FieldNote>
       </div>
 
-      <div className="b-game-answers">
+      <div className={styles.answers}>
         {answers.map((a, i) => (
           <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
             <span style={{ fontSize: 19, width: 24 }}>{i + 1}.</span>

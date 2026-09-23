@@ -59,7 +59,7 @@ export function TopicList({ topics, selectedIds, mode = 'select', onSelectSubtop
         ))}
       </div>
       {totalQuestions !== undefined && (
-        <div style={{ fontSize: 17, color: '#FF6633', marginBottom: 7 }}>{totalQuestions} вопросов</div>
+        <div style={{ fontSize: 17, color: 'var(--color-accent)', marginBottom: 7 }}>{totalQuestions} вопросов</div>
       )}
     </div>
   )

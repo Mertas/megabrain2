@@ -1,0 +1,7 @@
+@use '../../../styles/variables' as *;
+
+.answers {
+  border: 1px solid $color-border;
+  padding: $space-4;
+  margin: 0 0 $space-5;
+}

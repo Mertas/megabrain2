@@ -28,10 +28,10 @@ function formatCount(n: number): string {
 }
 
 const FORMAT_META: Record<string, { icon: string; color: string }> = {
-  solo:     { icon: '🧩', color: '#37CE74' },
-  pvp:      { icon: '⚔️', color: '#F9A253' },
-  blitz:    { icon: '⚡', color: '#FF6633' },
-  survival: { icon: '🔥', color: '#C9A' },
+  solo:     { icon: '🧩', color: 'var(--color-mode-solo)' },
+  pvp:      { icon: '⚔️', color: 'var(--color-mode-pvp)' },
+  blitz:    { icon: '⚡', color: 'var(--color-mode-blitz)' },
+  survival: { icon: '🔥', color: 'var(--color-mode-survival)' },
 }
 
 // ─── Stat Row ────────────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ function StatsTab({ stats }: { stats: ProfileStats }) {
       <h4 className={styles.sectionSubtitle}>По форматам</h4>
       <div className={styles.formatBars}>
         {stats.gamesByFormat.map((f) => {
-          const meta = FORMAT_META[f.format] || { icon: '?', color: '#999' }
+          const meta = FORMAT_META[f.format] || { icon: '?', color: 'var(--color-neutral)' }
           const pct = Math.round((f.count / maxFormat) * 100)
           return (
             <div key={f.format} className={styles.formatBarRow}>
@@ -175,7 +175,7 @@ function StatsTab({ stats }: { stats: ProfileStats }) {
           <h4 className={styles.sectionSubtitle}>Последние игры</h4>
           <div className={styles.recentList}>
             {stats.recent.map((g) => {
-              const meta = FORMAT_META[g.format] || { icon: '?', color: '#999' }
+              const meta = FORMAT_META[g.format] || { icon: '?', color: 'var(--color-neutral)' }
               const won = g.format === 'pvp' || g.format === 'blitz' ? g.correct === 1 : undefined
               return (
                 <div key={`${g.format}-${g.id}`} className={styles.recentRow}>

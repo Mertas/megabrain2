@@ -8,6 +8,7 @@ import { getEloIcon } from '../lib/icons'
 import { useAuth } from '../context/auth'
 import { Center } from '../components/atoms/Center/Center'
 import { PageHeader } from '../components/molecules/PageHeader/PageHeader'
+import { EmptyState } from '../components/molecules/EmptyState/EmptyState'
 import { PageContent } from '../components/molecules/PageContent/PageContent'
 import { rootRoute, PageWrap } from './base'
 
@@ -41,7 +42,13 @@ export const userRoute = createRoute({
     }, [login])
 
     if (loading) return <PageWrap route="user"><Center padding={60}><Spinner size="md" /></Center></PageWrap>
-    if (error || !profile) return <PageWrap route="user"><Center padding={60}><h2>Не найдено</h2><p style={{ color: '#666' }}>{error || 'Пользователь не существует'}</p></Center></PageWrap>
+    if (error || !profile) return (
+      <PageWrap route="user">
+        <PageContent width="narrow">
+          <EmptyState icon="🔍" title="Не найдено" description={error || 'Пользователь не существует'} />
+        </PageContent>
+      </PageWrap>
+    )
 
     const isOwner = auth.user?.id === profile.id
     return (

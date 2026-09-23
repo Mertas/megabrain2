@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { fetchSurvivalLeaderboard, type SurvivalLeaderboardResult } from '../../../lib/api'
 import styles from './SurvivalLeaderboard.module.scss'
 import { PageHeader } from '../../molecules/PageHeader/PageHeader'
+import { Center } from '../../atoms/Center/Center'
+import { Spinner } from '../../atoms/Spinner/Spinner'
 
 export function SurvivalLeaderboard() {
   const [period, setPeriod] = useState<'all' | 'weekly' | 'daily'>('all')
@@ -43,7 +45,7 @@ export function SurvivalLeaderboard() {
       )}
 
       {loading ? (
-        <p className={styles.loading}>Загрузка...</p>
+        <Center padding={40}><Spinner size="md" /></Center>
       ) : !data || data.entries.length === 0 ? (
         <p className={styles.empty}>Нет записей за этот период. Сыграйте первую игру!</p>
       ) : (

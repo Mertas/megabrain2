@@ -100,11 +100,11 @@ export function NotFoundPage() {
     <PageWrap route="notFound">
       <div style={{ textAlign: 'center', padding: '24px 16px 40px' }}>
         <ParallaxPoster />
-        <h1 style={{ fontSize: 48, margin: '0 0 12px', color: '#FF6633' }}>404</h1>
-        <p style={{ fontSize: 15, lineHeight: 1.6, color: '#666', maxWidth: 560, margin: '0 auto 24px' }}>
+        <h1 style={{ fontSize: 48, margin: '0 0 12px', color: 'var(--color-accent)' }}>404</h1>
+        <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--color-text-grey)', maxWidth: 560, margin: '0 auto 24px' }}>
           Ночь. Москва. Иисус. GPS глючит, карты не грузятся, метро закрыто. Уже спрашивал дорогу у памятника Ленину — тот молчит. Пытался вызвать такси — приехал осёл. В общем, страница не найдена, и Спаситель тоже немного заблудился. Нажмите сюда, чтобы вывести его к главной.
         </p>
-        <Link to="/" style={{ color: '#F9A253', fontSize: 14, borderBottom: '1px dotted #F9A253', textDecoration: 'none' }}>
+        <Link to="/" style={{ color: 'var(--color-primary)', fontSize: 14, borderBottom: '1px dotted var(--color-primary)', textDecoration: 'none' }}>
           На главную
         </Link>
       </div>

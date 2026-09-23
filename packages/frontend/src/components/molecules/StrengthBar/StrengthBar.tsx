@@ -5,7 +5,7 @@ interface StrengthBarProps {
 }
 
 const labels = ['Очень слабый', 'Слабый', 'Средний', 'Хороший', 'Отличный']
-const colors = ['#FF0000', '#FF6633', '#F9A253', '#37CE74', '#00AA00']
+const colors = ['var(--color-error)', 'var(--color-accent)', 'var(--color-primary)', 'var(--color-success)', '#00AA00']
 
 export function StrengthBar({ strength }: StrengthBarProps) {
   const segs = labels.map((_, i) => i <= strength.score)

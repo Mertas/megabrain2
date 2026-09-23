@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Spinner } from '../../atoms/Spinner/Spinner'
 import styles from './Table.module.scss'
 
 export interface TableColumn<T> {
@@ -31,7 +32,7 @@ export function Table<T>({ columns, data, rowKey, loading = false }: TableProps<
         <tbody>
           {loading && (
             <tr>
-              <td colSpan={columns.length} className={styles.empty}>Загрузка...</td>
+              <td colSpan={columns.length} className={styles.empty}><Spinner size="sm" inline /></td>
             </tr>
           )}
           {!loading && data.length === 0 && (
