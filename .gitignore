@@ -5,7 +5,14 @@ storybook-static/
 
 # SQLite
 *.db
-data/
+/data/
+packages/backend/data/
+
+# Секреты локальных агентов
+bob.env
+
+# Логи
+*.log
 
 # Environment
 .env

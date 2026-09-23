@@ -37,6 +37,7 @@ function createUser(input: RegisterInput & { passwordHash: string; nickname: str
 }
 
 function saveRefreshToken(userId: number, token: string, expiresAt: string): void {
+  db.prepare('DELETE FROM refresh_tokens WHERE user_id = ?').run(userId)
   db.prepare('INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES (?, ?, ?)').run(
     userId,
     token,

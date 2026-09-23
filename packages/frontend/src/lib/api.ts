@@ -275,6 +275,7 @@ export interface AdminQuestion {
   explanation: string | null
   note: string | null
   image_url: string | null
+  flagged: number
   topic_id: number
   topic_name: string
   category_id: number
@@ -307,9 +308,10 @@ export interface AdminUser {
   created_at: string
 }
 
-export async function fetchAdminQuestions(page = 1, search = ''): Promise<AdminPageResult<AdminQuestion>> {
+export async function fetchAdminQuestions(page = 1, search = '', flagged = false): Promise<AdminPageResult<AdminQuestion>> {
   const params = new URLSearchParams({ page: String(page), limit: '50' })
   if (search) params.set('search', search)
+  if (flagged) params.set('flagged', '1')
   return request(`/admin/questions?${params}`)
 }
 
@@ -323,6 +325,10 @@ export async function updateAdminQuestion(id: number, data: Partial<AdminQuestio
 
 export async function deleteAdminQuestion(id: number): Promise<void> {
   return request(`/admin/questions/${id}`, { method: 'DELETE' })
+}
+
+export async function flagQuestion(id: number): Promise<{ id: number; flagged: number }> {
+  return request(`/topics/questions/${id}/flag`, { method: 'POST' })
 }
 
 export async function fetchAdminCategories(): Promise<AdminCategory[]> {

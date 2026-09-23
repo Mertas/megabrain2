@@ -5,7 +5,7 @@ import { GameQuitConfirm } from '../../molecules/GameQuitConfirm/GameQuitConfirm
 import { PowerupBar, type ActivePowerup } from '../../molecules/PowerupBar/PowerupBar'
 import { Button } from '../../atoms/Button/Button'
 import { Text } from '../../atoms/Text/Text'
-import { answerSurvival, finishSurvival, checkAnswer, type SurvivalQuestion, type SurvivalSummary, type PowerupType } from '../../../lib/api'
+import { answerSurvival, finishSurvival, checkAnswer, flagQuestion, type SurvivalQuestion, type SurvivalSummary, type PowerupType } from '../../../lib/api'
 import styles from './SurvivalBoard.module.scss'
 
 export interface SurvivalBoardProps {
@@ -53,6 +53,7 @@ export function SurvivalBoard({
   const [activePowerups, setActivePowerups] = useState<ActivePowerup[]>([])
   const [hiddenIndices, setHiddenIndices] = useState<number[]>([])
   const [timeBonus, setTimeBonus] = useState(0)
+  const [flaggedIds, setFlaggedIds] = useState<Set<number>>(new Set())
 
   const handleActivatePowerup = useCallback(async (powerupId: string, _pu: PowerupType) => {
     setActivePowerups((prev) => [...prev, { type: powerupId, applied: true }])
@@ -287,7 +288,29 @@ export function SurvivalBoard({
       </div>
 
       {question.imageUrl && <div className={styles.image}><img src={question.imageUrl} alt="" /></div>}
-      <div className={styles.questionText}>{question.text}</div>
+      <div className={styles.questionText}>
+        {question.text}
+        {!paused && (
+          <button
+            type="button"
+            className={`${styles.flagBtn} ${flaggedIds.has(question.id) ? styles.flagged : ''}`}
+            title={flaggedIds.has(question.id) ? 'Вопрос отмечен как плохой' : 'Отметить как плохой вопрос'}
+            onClick={async (e) => {
+              e.stopPropagation()
+              try {
+                await flagQuestion(question.id)
+                setFlaggedIds((prev) => {
+                  const next = new Set(prev)
+                  if (next.has(question.id)) next.delete(question.id); else next.add(question.id)
+                  return next
+                })
+              } catch { /* ignore */ }
+            }}
+          >
+            {flaggedIds.has(question.id) ? '🚩' : '🚩'}
+          </button>
+        )}
+      </div>
 
       <AnswerGrid key={`${sessionId}-${questionNumber}`} answers={question.answers} dimmedIndices={hiddenIndices} onAnswer={paused ? undefined : handleAnswer} />
 

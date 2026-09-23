@@ -237,6 +237,7 @@ export function setupDatabase(): void {
   try { db.exec('ALTER TABLE users ADD COLUMN score INTEGER NOT NULL DEFAULT 0') } catch { /* already exists */ }
   try { db.exec('ALTER TABLE users ADD COLUMN best_survival_score REAL NOT NULL DEFAULT 0') } catch { /* already exists */ }
   try { db.exec('ALTER TABLE users ADD COLUMN best_survival_streak INTEGER NOT NULL DEFAULT 0') } catch { /* already exists */ }
+  try { db.exec('ALTER TABLE questions ADD COLUMN flagged INTEGER NOT NULL DEFAULT 0') } catch { /* already exists */ }
 
   console.log('[DB] Tables created/verified')
 }

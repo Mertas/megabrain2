@@ -35,7 +35,7 @@ const TIME_OPTIONS = [
 const blitzRules = [
   { icon: '\u26A1', text: 'Один вопрос на двоих — кто первый ответил правильно, забирает раунд' },
   { icon: '\u{1F6AB}', text: 'Одна попытка на раунд. Неверный ответ — вы блокируетесь до конца раунда' },
-  { icon: '\u{1F3C6}', text: `Best of ${ROUND_OPTIONS[0].value === '5' ? '5, 7 или 9' : 'N'}: побеждает первый, выигравший больше половины раундов` },
+  { icon: '\u{1F3C6}', text: `Best of 5, 7 или 9: побеждает первый, выигравший больше половины раундов` },
 ]
 
 interface Props {
@@ -49,10 +49,10 @@ export function Blitz({ categories, token }: Props) {
   const [roundCount, setRoundCount] = useState(5)
   const [timePerRound, setTimePerRound] = useState(15)
   const [error, setError] = useState('')
+  const mountedRef = useRef(true)
 
-  // Match state
   const [match, setMatch] = useState<BlitzMatchFound | null>(null)
-  const [question, setQuestion] = useState<{ text: string; answers: string[]; note?: string | null } | null>(null)
+  const [question, setQuestion] = useState<{ id: number; text: string; answers: string[]; note?: string | null } | null>(null)
   const [roundNumber, setRoundNumber] = useState(0)
   const [myScore, setMyScore] = useState(0)
   const [oppScore, setOppScore] = useState(0)
@@ -62,8 +62,8 @@ export function Blitz({ categories, token }: Props) {
   const [gameResult, setGameResult] = useState<BlitzGameResult | null>(null)
   const [timeMs, setTimeMs] = useState(0)
   const [paused, setPaused] = useState(false)
+  const [oppDisconnected, setOppDisconnected] = useState(false)
 
-  // Powerup state
   const [powerupTypes, setPowerupTypes] = useState<PowerupType[]>([])
   const [selectedPowerupIds, setSelectedPowerupIds] = useState<string[]>([])
   const [activePowerups, setActivePowerups] = useState<ActivePowerup[]>([])
@@ -72,6 +72,21 @@ export function Blitz({ categories, token }: Props) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef = useRef(0)
 
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
+
+  useEffect(() => {
+    fetchPowerupInventory().then((inv) => {
+      const pIds = inv.inventory.filter((i) => i.quantity > 0).map((i) => i.powerupId)
+      fetch('/api/powerups/types').then((r) => r.json()).then((allTypes: PowerupType[]) => {
+        const available = allTypes.filter((t) => pIds.includes(t.id) && t.available_in !== 'solo')
+        setPowerupTypes(available.slice(0, 3))
+      }).catch(() => {})
+    }).catch(() => {})
+  }, [])
+
   const topicData: Topic[] = useMemo(() => categories.map((cat) => ({
     id: cat.id,
     name: cat.name,
@@ -79,16 +94,48 @@ export function Blitz({ categories, token }: Props) {
     subtopics: cat.topics.map((t) => ({ id: t.id, name: t.name })),
   })), [categories])
 
+  const handleSelectSubtopic = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    )
+  }
+
+  const handleSelectAll = (topicId: number) => {
+    const topic = topicData.find((t) => t.id === topicId)
+    if (!topic) return
+    const ids = topic.subtopics.map((s) => s.id)
+    const allSelected = ids.every((id) => selectedIds.includes(id))
+    if (allSelected) {
+      setSelectedIds((prev) => prev.filter((x) => !ids.includes(x)))
+    } else {
+      const toAdd = ids.filter((id) => !selectedIds.includes(id))
+      setSelectedIds((prev) => [...prev, ...toAdd])
+    }
+  }
+
   const handleStart = () => {
     if (selectedIds.length === 0) {
       setError('Выберите хотя бы одну тему')
       return
     }
     setError('')
+    setOppDisconnected(false)
     try {
       connect(token)
       const sock = getSocket()
       if (!sock) { setError('Ошибка подключения'); return }
+
+      sock.off('blitz:waiting')
+      sock.off('blitz:cancelled')
+      sock.off('blitz:error')
+      sock.off('blitz:match-found')
+      sock.off('blitz:countdown')
+      sock.off('blitz:round-start')
+      sock.off('blitz:opponent-answered')
+      sock.off('blitz:round-result')
+      sock.off('blitz:game-result')
+      sock.off('blitz:opponent-disconnected')
+      sock.off('blitz:powerup-opponent')
 
       sock.on('blitz:waiting', () => setPhase('waiting'))
       sock.on('blitz:cancelled', () => { setPhase('setup'); disconnect() })
@@ -98,6 +145,8 @@ export function Blitz({ categories, token }: Props) {
         setMatch(data)
         setMyScore(0)
         setOppScore(0)
+        setError('')
+        setOppDisconnected(false)
       })
 
       sock.on('blitz:countdown', (data: { seconds: number }) => {
@@ -105,14 +154,17 @@ export function Blitz({ categories, token }: Props) {
         setCountdown(data.seconds)
       })
 
-      sock.on('blitz:round-start', (data: { roundNumber: number; question: { text: string; answers: string[]; note?: string | null }; scores: { p1: number; p2: number } }) => {
+      sock.on('blitz:round-start', (data: { roundNumber: number; question: { id: number; text: string; answers: string[]; note?: string | null }; yourScore: number; opponentScore: number }) => {
         setPhase('playing')
         setRoundNumber(data.roundNumber)
         setQuestion(data.question)
+        setMyScore(data.yourScore)
+        setOppScore(data.opponentScore)
         setOpponentAnswered(false)
         setRoundResult(null)
         setPaused(false)
         timeRef.current = 0
+        setTimeMs(0)
         startTimeRef.current = Date.now()
         startTimer()
       })
@@ -124,8 +176,8 @@ export function Blitz({ categories, token }: Props) {
         setPaused(true)
         setPhase('round-result')
         setRoundResult(data)
-        setMyScore(data.scores.p1)
-        setOppScore(data.scores.p2)
+        setMyScore(data.yourScore)
+        setOppScore(data.opponentScore)
       })
 
       sock.on('blitz:game-result', (data: BlitzGameResult) => {
@@ -133,11 +185,14 @@ export function Blitz({ categories, token }: Props) {
         setGameResult(data)
       })
 
-      sock.on('blitz:opponent-disconnected', () => setError('Соперник отключился'))
+      sock.on('blitz:opponent-disconnected', () => {
+        setError('Соперник отключился. Ожидание 15 сек...')
+        setOppDisconnected(true)
+      })
 
       sock.on('blitz:powerup-opponent', (data: { powerupId: string; effect: string }) => {
         if (data.powerupId === 'freeze') {
-          timeRef.current = Math.min(timeRef.current + 300, timePerRound * 100)
+          timeRef.current = Math.max(0, timeRef.current - 300)
         }
       })
 
@@ -147,25 +202,17 @@ export function Blitz({ categories, token }: Props) {
     }
   }
 
-  const handleCancel = () => {
-    cancelQueue()
-    disconnect()
-    setPhase('setup')
-  }
-
   const handleAnswer = useCallback(async (answerText: string): Promise<AnswerCheckResult> => {
     if (paused) return { correct: false, correctAnswer: '' }
     setPaused(true)
     stopTimer()
     const timeCs = Math.floor((Date.now() - startTimeRef.current) / 10)
     sendAnswer(answerText, timeCs)
-    // The real result comes via socket event blitz:round-result
     return { correct: false, correctAnswer: '' }
   }, [paused])
 
   const handlePlayAgain = () => {
     disconnect()
-    setPhase('setup')
     setMatch(null)
     setQuestion(null)
     setGameResult(null)
@@ -173,6 +220,14 @@ export function Blitz({ categories, token }: Props) {
     setMyScore(0)
     setOppScore(0)
     setCountdown(3)
+    setOppDisconnected(false)
+    setError('')
+    setPhase('setup')
+    if (mountedRef.current) {
+      setTimeout(() => {
+        if (mountedRef.current) handleStart()
+      }, 100)
+    }
   }
 
   const startTimer = () => {
@@ -187,214 +242,199 @@ export function Blitz({ categories, token }: Props) {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
   }
 
+  const handleCancel = () => {
+    cancelQueue()
+    disconnect()
+    setPhase('setup')
+  }
+
   useEffect(() => {
-    return () => { disconnect(); stopTimer() }
+    return () => {
+      stopTimer()
+      disconnect()
+    }
   }, [])
 
-  // Load powerup types
-  useEffect(() => {
-    fetchPowerupInventory().then(async (inv) => {
-      const pvpIds = new Set(['freeze', 'shield', 'double-points', 'extra-time', 'peek'])
-      const invIds = inv.inventory.filter((i) => i.quantity > 0 && pvpIds.has(i.powerupId)).map((i) => i.powerupId)
-      const response = await fetch('/api/powerups/types')
-      const allTypes: PowerupType[] = await response.json()
-      setPowerupTypes(allTypes.filter((t) => invIds.includes(t.id)))
-    }).catch(() => {})
-  }, [])
 
-  const selectAll = (topicId: number) => {
-    const t = topicData.find((x) => x.id === topicId)!
-    const ids = t.subtopics.map((s) => s.id)
-    const allSelected = ids.every((id) => selectedIds.includes(id))
-    setSelectedIds((prev) => allSelected ? prev.filter((x) => !ids.includes(x)) : [...new Set([...prev, ...ids])])
-  }
-
-  if (phase === 'waiting') {
+  // ==== RENDER: setup ====
+  if (phase === 'setup') {
     return (
-      <div className={styles.wrap}>
-        <div className={styles.waiting}>
-          <div className={styles.spinner} />
-          <Text as="h2" variant="body">Поиск соперника...</Text>
-          <p>{roundCount === 5 ? 'До 3 побед' : roundCount === 7 ? 'До 4 побед' : 'До 5 побед'} • {timePerRound} сек на раунд</p>
-          <Button variant="ghost" size="sm" onClick={handleCancel}>Отмена</Button>
-        </div>
-      </div>
-    )
-  }
+      <div>
+        <Hero mode="blitz" />
+        <Rules items={blitzRules} />
 
-  if (phase === 'countdown') {
-    return (
-      <div className={styles.wrap}>
-        <div className={styles.countdown}>
-          <div className={styles.countdownVs}>
-            <span>Вы</span>
-            <span className={styles.vs}>vs</span>
-            <span>{match?.opponent.nickname}</span>
-          </div>
-          <div className={styles.countdownNum}>{countdown}</div>
-        </div>
-      </div>
-    )
-  }
+        <ConfigCard label="Темы" hint="Выберите хотя бы одну категорию">
+          <TopicList topics={topicData} selectedIds={selectedIds} onSelectSubtopic={handleSelectSubtopic} onSelectAll={handleSelectAll} />
+        </ConfigCard>
 
-  if (phase === 'playing' && question) {
-    return (
-      <div className={styles.wrap}>
-        <div className={styles.topBar}>
-          <div className={styles.scoreBox}>
-            <span>Вы: {myScore}</span>
-            <span className={styles.oppLabel}>{match?.opponent.nickname}: {oppScore}</span>
-          </div>
-          <div className={styles.roundInfo}>
-            Раунд {roundNumber} • {timePerRound} сек
-          </div>
-        </div>
+        <ConfigCard label="Раунды">
+          <Select options={ROUND_OPTIONS} value={String(roundCount)} onChange={(e) => setRoundCount(parseInt(e.target.value))} />
+        </ConfigCard>
 
-        <div className={styles.timerRow}>
-          <Timer elapsedCentiseconds={timeMs} />
-        </div>
+        <ConfigCard label="Время на раунд">
+          <Select options={TIME_OPTIONS} value={String(timePerRound)} onChange={(e) => setTimePerRound(parseInt(e.target.value))} />
+        </ConfigCard>
 
-        {opponentAnswered && <div className={styles.oppStatus}>Соперник ответил</div>}
-
-        <div className={styles.questionText}>{question.text}</div>
-
-        <AnswerGrid
-          key={`r${roundNumber}`}
-          answers={question.answers}
-          onAnswer={paused ? undefined : handleAnswer}
-        />
-
-        {question.note && (
-          <div className={styles.note}>{question.note}</div>
+        {powerupTypes.length > 0 && (
+          <ConfigCard label="Power-ups (до 2)">
+            <PowerupSelector available={powerupTypes} selectedIds={selectedPowerupIds} onChange={setSelectedPowerupIds} maxSelect={2} />
+          </ConfigCard>
         )}
 
-        {selectedPowerupIds.length > 0 && powerupTypes.length > 0 && (
-          <PowerupBar
-            available={powerupTypes.filter((t) => selectedPowerupIds.includes(t.id))}
-            active={activePowerups}
-            gameMode="blitz"
-            onActivate={(id) => {
-              setActivePowerups((prev) => [...prev, { type: id, applied: true }])
-              usePowerup(id)
-            }}
-          />
-        )}
+        {error && <Text variant="error" center as="div">{error}</Text>}
+        <Button variant="primary" size="lg" onClick={handleStart} disabled={selectedIds.length === 0}>Искать соперника</Button>
       </div>
     )
   }
 
-  if (phase === 'round-result' && roundResult && question) {
-    const myAnswer = roundResult.p1.answer
-    const myCorrect = roundResult.p1.correct
-    const oppAnswer = roundResult.p2.answer
-    const oppCorrect = roundResult.p2.correct
-    const iWon = roundResult.winnerId != null // We don't know our id, but if there's a winner it's one of us
-    const isDraw = roundResult.winnerId == null
-
-    return (
-      <div className={styles.wrap}>
-        <div className={styles.roundEndBanner}>
-          {isDraw ? (
-            <div className={styles.drawBanner}>Ничья в раунде</div>
-          ) : iWon ? (
-            <div className={styles.winBanner}>Раунд завершён!</div>
-          ) : (
-            <div className={styles.loseBanner}>Раунд завершён!</div>
-          )}
-        </div>
-
-        <div className={styles.roundDetails}>
-          <div className={styles.playerRow}>
-            <span>Ваш ответ: {myAnswer ?? '—'}</span>
-            <span className={myCorrect ? styles.green : styles.red}>{myCorrect === true ? '✓' : myCorrect === false ? '✗' : ''}</span>
-          </div>
-          <div className={styles.playerRow}>
-            <span>{match?.opponent.nickname}: {oppAnswer ?? '—'}</span>
-            <span className={oppCorrect ? styles.green : styles.red}>{oppCorrect === true ? '✓' : oppCorrect === false ? '✗' : ''}</span>
-          </div>
-          <div className={styles.correctRow}>
-            Правильный ответ: <strong>{roundResult.correctAnswer}</strong>
-          </div>
-        </div>
-
-        <div className={styles.scoreBoard}>
-          Вы {myScore} : {oppScore} {match?.opponent.nickname}
-        </div>
-      </div>
-    )
-  }
-
-  if (phase === 'results' && gameResult) {
-    const won = gameResult.yourScore > gameResult.opponentScore
-    const lost = gameResult.yourScore < gameResult.opponentScore
-
-    return (
-      <div className={styles.wrap}>
-        <div className={styles.resultBanner}>
-          {won && <div className={styles.winBanner}>🏆 Победа!</div>}
-          {lost && <div className={styles.loseBanner}>Поражение</div>}
-          {!won && !lost && <div className={styles.drawBanner}>Ничья</div>}
-        </div>
-
-        <div className={styles.resultScore}>
-          {gameResult.yourScore} : {gameResult.opponentScore}
-          <div className={`${styles.eloChange} ${gameResult.yourEloChange >= 0 ? styles.eloUp : styles.eloDown}`}>
-            Рейтинг: {gameResult.yourNewRating} ({gameResult.yourEloChange >= 0 ? '+' : ''}{gameResult.yourEloChange})
-          </div>
-          <div className={styles.oppElo}>{match?.opponent.nickname}: {gameResult.opponent.newRating}</div>
-        </div>
-
-        <div className={styles.roundsSummary}>
-          {gameResult.rounds.map((r) => (
-            <div key={r.roundNumber} className={styles.roundSummaryRow}>
-              <span>Раунд {r.roundNumber}</span>
-              <span className={r.yourCorrect ? styles.green : r.yourCorrect === false ? styles.red : ''}>
-                {r.yourCorrect ? '✓' : r.yourCorrect === false ? '✗' : '—'}
-              </span>
-              <span>{r.correctAnswer}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className={styles.actions}>
-          <Button variant="primary" size="sm" onClick={handlePlayAgain}>Играть снова</Button>
-        </div>
-      </div>
-    )
-  }
+  // ==== RENDER: playing ====
+  const isPlaying = phase === 'playing' || phase === 'countdown'
+  const inGame = isPlaying || phase === 'round-result'
 
   return (
-    <div className={styles.wrap}>
-      <Hero icon={'\u26A1'} title="Блиц-дуэль" description={`Один вопрос на двоих. Кто первый ответит правильно — забирает раунд. Best of ${roundCount === 5 ? '5' : roundCount === 7 ? '7' : '9'}. Скорость решает!`}       />
-
-      <Rules items={blitzRules} />
-
-      <TopicList
-        topics={topicData}
-        selectedIds={selectedIds}
-        onSelectSubtopic={(id) => setSelectedIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id])}
-        onSelectAll={selectAll}
-      />
-
-      <ConfigCard>
-        <div className={styles.configRow}>
-          <Select label="Формат" hint="До скольких побед играем. 3 победы — быстрый матч, 5 — полноценная дуэль." options={ROUND_OPTIONS} value={String(roundCount)} onChange={(e) => setRoundCount(parseInt(e.target.value))} />
-          <Select label="Время на раунд" hint="Секунд на каждый раунд. 10 — молниеносно, 20 — с запасом на раздумья." options={TIME_OPTIONS} value={String(timePerRound)} onChange={(e) => setTimePerRound(parseInt(e.target.value))} />
+    <div>
+      {/* Scoreboard */}
+      {inGame && match && (
+        <div className={styles.scoreboard}>
+          <div className={styles.player}>
+            <span className={styles.playerName}>Вы</span>
+            <span className={styles.playerScore}>{myScore}</span>
+          </div>
+          <div className={styles.vs}>vs</div>
+          <div className={styles.player}>
+            <span className={styles.playerName}>{match.opponent.nickname}</span>
+            <span className={styles.playerScore}>{oppScore}</span>
+          </div>
         </div>
-      </ConfigCard>
-
-      {powerupTypes.length > 0 && (
-        <PowerupSelector types={powerupTypes} selected={selectedPowerupIds} onChange={setSelectedPowerupIds} />
       )}
 
-      {error && <p className={styles.error}>{error}</p>}
+      {/* Countdown */}
+      {phase === 'countdown' && (
+        <div className={styles.center}>
+          <div className={styles.countdownNumber}>{countdown || 'GO'}</div>
+          <Text size="lg" center>Соперник найден! Приготовьтесь...</Text>
+        </div>
+      )}
 
-      <div className={styles.actions}>
-        <Button variant="primary" size="lg" onClick={handleStart} disabled={selectedIds.length === 0}>Искать соперника</Button>
-        <Button variant="link" size="sm" onClick={() => window.location.href = '/ratings'}>
-          {'\u{1F3C6}'} Таблица лидеров
-        </Button>
-      </div>
+      {/* Question */}
+      {inGame && question && (
+        <>
+          <div className={styles.questionText}>{question.text}</div>
+
+          <AnswerGrid
+            key={`${roundNumber}`}
+            answers={question.answers}
+            onAnswer={paused || oppDisconnected ? undefined : handleAnswer}
+            dimmedIndices={[]}
+          />
+
+          {opponentAnswered && !paused && (
+            <div className={styles.opponentAnswered}>Соперник ответил</div>
+          )}
+
+          {oppDisconnected && (
+            <div className={styles.opponentLeft}>Соперник отключился</div>
+          )}
+
+          {/* Timer */}
+          {phase === 'playing' && (
+            <div className={styles.timerRow}>
+              <Timer totalCs={timePerRound * 100} displayCs={timeMs} />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Round Result */}
+      {phase === 'round-result' && roundResult && (
+        <div className={styles.roundResult}>
+          {roundResult.winnerId === null ? (
+            <div className={styles.drawBanner}>Ничья в раунде</div>
+          ) : roundResult.yourCorrect ? (
+            <div className={styles.winBanner}>Вы выиграли раунд!</div>
+          ) : (
+            <div className={styles.loseBanner}>Раунд проигран</div>
+          )}
+
+          <div className={styles.roundDetails}>
+            <div className={styles.answerCol}>
+              <span className={styles.answerLabel}>Ваш ответ</span>
+              <span className={`${styles.answerText} ${roundResult.yourCorrect ? styles.correct : styles.wrong}`}>
+                {roundResult.yourAnswer || '—'}
+              </span>
+              {roundResult.yourTimeCs != null && <span className={styles.answerTime}>{(roundResult.yourTimeCs / 100).toFixed(1)}с</span>}
+            </div>
+            <div className={styles.answerCol}>
+              <span className={styles.answerLabel}>Ответ соперника</span>
+              <span className={`${styles.answerText} ${roundResult.opponentCorrect ? styles.correct : styles.wrong}`}>
+                {roundResult.opponentAnswer || '—'}
+              </span>
+              {roundResult.opponentTimeCs != null && <span className={styles.answerTime}>{(roundResult.opponentTimeCs / 100).toFixed(1)}с</span>}
+            </div>
+          </div>
+          <div className={styles.correctAnswer}>Правильный ответ: {roundResult.correctAnswer}</div>
+        </div>
+      )}
+
+      {/* Powerup bar */}
+      {inGame && powerupTypes.length > 0 && (
+        <PowerupBar
+          available={powerupTypes}
+          active={activePowerups}
+          gameMode="blitz"
+          onActivate={(id) => {
+            setActivePowerups((prev) => [...prev, { type: id, applied: true }])
+            usePowerup(id)
+          }}
+        />
+      )}
+
+      {/* Cancel */}
+      {phase === 'waiting' && (
+        <div className={styles.center}>
+          <Text size="lg">Поиск соперника...</Text>
+          <Button variant="ghost" onClick={handleCancel}>Отмена</Button>
+        </div>
+      )}
+
+      {/* Error */}
+      {error && <Text variant="error" center as="div" style={{ marginTop: 12 }}>{error}</Text>}
+
+      {/* Game Results */}
+      {phase === 'results' && gameResult && (
+        <div className={styles.finalResults}>
+          <h2 className={styles.resultTitle}>
+            {gameResult.winnerId === null
+              ? 'Ничья!'
+              : gameResult.winnerId === match?.opponent.id
+                ? 'Вы проиграли!'
+                : 'Вы победили!'}
+          </h2>
+          <div className={styles.finalScores}>
+            <span>{gameResult.yourScore} — {gameResult.opponentScore}</span>
+          </div>
+          <div className={styles.eloChange}>
+            Рейтинг: {gameResult.yourEloChange >= 0 ? '+' : ''}{gameResult.yourEloChange} → {gameResult.yourNewRating}
+          </div>
+
+          <h3 className={styles.roundsTitle}>Раунды</h3>
+          {gameResult.rounds.map((r, i) => (
+            <div key={i} className={styles.roundHistory}>
+              <div className={styles.roundQ}>{r.roundNumber}. {r.questionText}</div>
+              <div className={styles.roundAnswers}>
+                <span className={`${styles.roundAnswer} ${r.yourCorrect ? styles.correct : (r.yourCorrect === false ? styles.wrong : '')}`}>
+                  Вы: {r.yourAnswer || '—'}
+                </span>
+                <span className={`${styles.roundAnswer} ${r.opponentCorrect ? styles.correct : (r.opponentCorrect === false ? styles.wrong : '')}`}>
+                  Соперник: {r.opponentAnswer || '—'}
+                </span>
+              </div>
+            </div>
+          ))}
+
+          <Button variant="primary" size="sm" onClick={handlePlayAgain}>Играть снова</Button>
+        </div>
+      )}
     </div>
   )
 }

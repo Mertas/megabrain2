@@ -5,8 +5,8 @@ import { GameResults } from '../components/organisms/GameResults/GameResults'
 import { Button } from '../components/atoms/Button/Button'
 import { Center } from '../components/atoms/Center/Center'
 import { Text } from '../components/atoms/Text/Text'
-import { submitGameResult, fetchPowerupTypes, type GameScoreResult, type PowerupType } from '../lib/api'
-import { getGameStore, setGameStore, clearGameStore } from '../lib/game-store'
+import { submitGameResult, fetchPowerupTypes, fetchQuestions, type GameScoreResult, type PowerupType } from '../lib/api'
+import { getGameStore, setGameStore } from '../lib/game-store'
 import { useAuth } from '../context/auth'
 import { rootRoute, PageWrap } from './base'
 
@@ -56,13 +56,29 @@ export const gameRoute = createRoute({
       setFinished(true)
     }
 
+    const handlePlayAgain = async () => {
+      const s = getGameStore()
+      try {
+        const qs = await fetchQuestions(s.subtopicIds, s.questionCount, true)
+        setGameStore({
+          ...s,
+          questions: qs.map((q) => ({ id: q.id, text: q.text, imageUrl: q.image_url || undefined, answers: q.answers, correctIndex: -1, note: q.note || undefined })),
+          result: null,
+          scoreResult: null,
+        })
+        setFinished(false)
+      } catch {
+        n({ to: '/' })
+      }
+    }
+
     if (finished) {
       const s = getGameStore()
       return (
         <PageWrap activeNav="game" breadcrumbs={[{ label: 'Игра' }, { label: 'Результаты' }]}>
           <GameResults result={s.result!} score={s.scoreResult || undefined} />
           <div style={{ textAlign: 'center', marginTop: 24 }}>
-            <Button variant="link" size="sm" onClick={() => { clearGameStore(); n({ to: '/' }) }}>Новая игра</Button>
+            <Button variant="link" size="sm" onClick={handlePlayAgain}>Новая игра</Button>
           </div>
         </PageWrap>
       )

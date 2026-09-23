@@ -250,11 +250,11 @@ export function PvP(_props: PvPProps) {
     return () => clearInterval(id)
   }, [paused, view])
 
-  const handleBackToLobby = () => {
+  const handlePlayAgain = () => {
     disconnect()
     setMatch(null)
     setResult(null)
-    setView('lobby')
+    handleJoin()
   }
 
   if (view === 'waiting') {
@@ -375,7 +375,7 @@ export function PvP(_props: PvPProps) {
         ))}
 
         <div className={styles.actions}>
-          <Button variant="primary" onClick={handleBackToLobby}>В лобби</Button>
+          <Button variant="primary" onClick={handlePlayAgain}>Играть снова</Button>
         </div>
       </div>
     )

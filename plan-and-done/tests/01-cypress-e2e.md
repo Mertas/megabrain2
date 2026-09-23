@@ -8,7 +8,7 @@
 
 Визуальные E2E-тесты с реальным браузером. Проверяют полные пользовательские сценарии: от регистрации до завершения игры. Используется **Cypress** — самый популярный инструмент для визуального тестирования.
 
-Бэкенд должен быть запущен (`npm run dev -w packages/backend` на порту 3001), фронтенд — через Vite dev server (`npm run dev` на порту 5173).
+Бэкенд должен быть запущен (`npm run dev -w packages/backend` на порту 3042), фронтенд — через Vite dev server (`npm run dev` на порту 5142).
 
 ---
 
@@ -29,7 +29,7 @@ import { defineConfig } from 'cypress'
 
 export default defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:5173',
+    baseUrl: 'http://localhost:5142',
     supportFile: 'cypress/support/e2e.ts',
     specPattern: 'cypress/e2e/**/*.cy.ts',
     viewportWidth: 1280,

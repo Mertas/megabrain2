@@ -5,7 +5,7 @@ import { GameQuitConfirm } from '../../molecules/GameQuitConfirm/GameQuitConfirm
 import { PowerupBar, type ActivePowerup } from '../../molecules/PowerupBar/PowerupBar'
 import { Button } from '../../atoms/Button/Button'
 import { Text } from '../../atoms/Text/Text'
-import { checkAnswer } from '../../../lib/api'
+import { checkAnswer, flagQuestion } from '../../../lib/api'
 import { calcScore } from '../../../lib/score'
 import type { PowerupType } from '../../../lib/api'
 import styles from './GameBoard.module.scss'
@@ -75,6 +75,7 @@ export function GameBoard({ questions, timeMode, timeSeconds, isAdmin = false, p
   const [retryKey, setRetryKey] = useState(0)
   const secondChanceRef = useRef(false)
   const [peekAnswer, setPeekAnswer] = useState<string | null>(null)
+  const [flaggedIds, setFlaggedIds] = useState<Set<number>>(new Set())
 
   const question = questions[idx]
   const timeLimitCs = timeSeconds * 100
@@ -318,7 +319,29 @@ export function GameBoard({ questions, timeMode, timeSeconds, isAdmin = false, p
           <img src={question.imageUrl} alt="" />
         </div>
       )}
-      <div className={styles.question}>{question.text}</div>
+      <div className={styles.question}>
+        {question.text}
+        {!paused && (
+          <button
+            type="button"
+            className={`${styles.flagBtn} ${flaggedIds.has(question.id) ? styles.flagged : ''}`}
+            title={flaggedIds.has(question.id) ? 'Вопрос отмечен как плохой' : 'Отметить как плохой вопрос'}
+            onClick={async (e) => {
+              e.stopPropagation()
+              try {
+                await flagQuestion(question.id)
+                setFlaggedIds((prev) => {
+                  const next = new Set(prev)
+                  if (next.has(question.id)) next.delete(question.id); else next.add(question.id)
+                  return next
+                })
+              } catch { /* ignore */ }
+            }}
+          >
+            {flaggedIds.has(question.id) ? '\u{1F6A9}' : '\u{1F6A9}'}
+          </button>
+        )}
+      </div>
 
       <AnswerGrid
         key={`${idx}-${retryKey}`}

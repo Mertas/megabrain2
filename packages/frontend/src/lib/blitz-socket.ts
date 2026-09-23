@@ -12,6 +12,7 @@ export interface BlitzQuestion {
 }
 
 export interface BlitzMatchFound {
+  yourIndex: 1 | 2
   opponent: { id: number; login: string; nickname: string; rating: number }
   roundCount: number
   timePerRound: number
@@ -20,10 +21,15 @@ export interface BlitzMatchFound {
 export interface BlitzRoundResult {
   roundNumber: number
   winnerId: number | null
-  p1: { answer: string | null; correct: boolean | null; timeCs: number | null }
-  p2: { answer: string | null; correct: boolean | null; timeCs: number | null }
+  yourAnswer: string | null
+  opponentAnswer: string | null
+  yourCorrect: boolean | null
+  opponentCorrect: boolean | null
+  yourTimeCs: number | null
+  opponentTimeCs: number | null
   correctAnswer: string
-  scores: { p1: number; p2: number }
+  yourScore: number
+  opponentScore: number
 }
 
 export interface BlitzGameResult {

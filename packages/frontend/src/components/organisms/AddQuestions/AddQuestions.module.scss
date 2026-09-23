@@ -4,31 +4,121 @@
 .submitRow { margin-top: 16px; }
 .parsedCount { margin-top: 8px; }
 
-.preview { margin-top: 30px; }
-.previewTitle { font-size: 16px; margin-bottom: 12px; color: #182C3F; font-weight: 600; }
-.previewCard {
-  margin-bottom: 16px;
-  padding: 12px;
-  border: 1px solid #EDEBD2;
-  border-radius: 6px;
+// ─── Review ──────────────────────────────────────────────────────────────
+
+.reviewBlock { margin-top: 16px; }
+
+.groupHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
 }
-.previewQ {
-  font-size: 16px;
-  margin-bottom: 8px;
+
+.groupIdx {
+  font-size: 15px;
+  font-weight: 700;
   color: #182C3F;
-  line-height: 1.4;
 }
-.previewAnswer {
-  font-size: 14px;
-  margin-left: 20px;
-  color: #333;
-  line-height: 1.5;
+
+.groupCount {
+  font-size: 11px;
+  color: #888;
 }
-.previewCorrect { color: #2D7A4F; font-weight: 600; }
-.previewNote {
+
+.candidatesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.candidateRow {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color .15s;
+}
+
+.candidateSelected {
+  border-color: #37CE74;
+  background: #F0FFF4;
+}
+
+.candidateCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
-  margin-left: 20px;
-  margin-top: 6px;
-  color: #999;
-  font-style: italic;
+  cursor: pointer;
+
+  input { cursor: pointer; margin: 0; }
+}
+
+.candidateLabel {
+  font-weight: 600;
+  color: #333;
+}
+
+.matchTag {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #FFEBEE;
+  color: #C62828;
+  font-weight: 600;
+}
+
+.matchInput {
+  outline: 2px solid #FF6633;
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+
+.inlineAnswers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 24px;
+}
+
+.inlineAnswer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+
+  input[type="radio"] {
+    flex-shrink: 0;
+    margin: 0;
+  }
+}
+
+.inlineCorrect {
+  font-weight: 600;
+  color: #2D7A4F;
+}
+
+// ─── Clean list ──────────────────────────────────────────────────────────
+
+.cleanSection {
+  margin-bottom: 12px;
+}
+
+.cleanGrid {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+
+.cleanItem {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: #e8f5e9;
+  border-radius: 4px;
 }

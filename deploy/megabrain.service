@@ -1,0 +1,22 @@
+# systemd-юнит сервера Megabrain2.
+# Ставить: /etc/systemd/system/megabrain.service, затем systemctl daemon-reload && systemctl enable --now megabrain
+[Unit]
+Description=Megabrain2 quiz server
+After=network.target
+
+[Service]
+User=gds
+WorkingDirectory=/srv/megabrain/current
+# секреты и настройки — вне релизов: деплой их не касается
+EnvironmentFile=/srv/megabrain/shared/.env
+ExecStart=/usr/bin/node packages/backend/dist/index.js
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+# минимум прав: сервису нечего делать вне своего каталога
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

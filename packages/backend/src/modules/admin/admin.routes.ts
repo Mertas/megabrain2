@@ -13,20 +13,31 @@ adminRouter.get('/questions', (req, res) => {
   const page = parseInt(req.query.page as string) || 1
   const limit = parseInt(req.query.limit as string) || 50
   const search = (req.query.search as string) || ''
+  const flagged = req.query.flagged as string
   const offset = (page - 1) * limit
 
   let where = ''
   const params: unknown[] = []
+  const conditions: string[] = []
+  
   if (search) {
-    where = 'WHERE q.text LIKE ? OR q.answer_1 LIKE ? OR q.answer_2 LIKE ? OR q.answer_3 LIKE ? OR q.answer_4 LIKE ? OR q.note LIKE ? OR t.name LIKE ? OR c.name LIKE ?'
+    conditions.push('(q.text LIKE ? OR q.answer_1 LIKE ? OR q.answer_2 LIKE ? OR q.answer_3 LIKE ? OR q.answer_4 LIKE ? OR q.note LIKE ? OR t.name LIKE ? OR c.name LIKE ?)')
     const s = `%${search}%`
     params.push(s, s, s, s, s, s, s, s)
+  }
+  
+  if (flagged === '1') {
+    conditions.push('q.flagged = 1')
+  }
+  
+  if (conditions.length > 0) {
+    where = 'WHERE ' + conditions.join(' AND ')
   }
 
   const countRow = db.prepare(`SELECT COUNT(*) as c FROM questions q JOIN topics t ON t.id = q.topic_id JOIN categories c ON c.id = t.category_id ${where}`).get(...params) as { c: number }
 
   const rows = db.prepare(
-    `SELECT q.id, q.text, q.answer_1, q.answer_2, q.answer_3, q.answer_4, q.correct_index, q.explanation, q.note, q.image_url,
+    `SELECT q.id, q.text, q.answer_1, q.answer_2, q.answer_3, q.answer_4, q.correct_index, q.explanation, q.note, q.image_url, q.flagged,
             t.id as topic_id, t.name as topic_name,
             c.id as category_id, c.name as category_name
      FROM questions q
@@ -37,7 +48,7 @@ adminRouter.get('/questions', (req, res) => {
      LIMIT ? OFFSET ?`,
   ).all(...params, limit, offset) as Array<{
     id: number; text: string; answer_1: string; answer_2: string; answer_3: string; answer_4: string
-    correct_index: number; explanation: string | null; note: string | null; image_url: string | null
+    correct_index: number; explanation: string | null; note: string | null; image_url: string | null; flagged: number
     topic_id: number; topic_name: string; category_id: number; category_name: string
   }>
 
@@ -63,12 +74,17 @@ adminRouter.get('/questions/:id', (req, res) => {
 })
 
 adminRouter.put('/questions/:id', (req, res) => {
-  const { text, answer_1, answer_2, answer_3, answer_4, correct_index, explanation, note, topic_id } = req.body
+  const { text, answer_1, answer_2, answer_3, answer_4, correct_index, explanation, note, topic_id, flagged } = req.body
   if (!text) { res.status(400).json({ error: 'INVALID', message: 'text обязателен' }); return }
 
-  db.prepare(
-    `UPDATE questions SET text=?, answer_1=?, answer_2=?, answer_3=?, answer_4=?, correct_index=?, explanation=?, note=?, topic_id=? WHERE id=?`,
-  ).run(text, answer_1 || '', answer_2 || '', answer_3 || '', answer_4 || '', correct_index ?? 0, explanation || null, note || null, topic_id || null, req.params.id)
+  const setClauses: string[] = ['text=?', 'answer_1=?', 'answer_2=?', 'answer_3=?', 'answer_4=?', 'correct_index=?', 'explanation=?', 'note=?']
+  const params: unknown[] = [text, answer_1 || '', answer_2 || '', answer_3 || '', answer_4 || '', correct_index ?? 0, explanation || null, note || null]
+
+  if (topic_id !== undefined) { setClauses.push('topic_id=?'); params.push(topic_id) }
+  if (flagged !== undefined) { setClauses.push('flagged=?'); params.push(flagged) }
+
+  params.push(req.params.id)
+  db.prepare(`UPDATE questions SET ${setClauses.join(', ')} WHERE id=?`).run(...params)
 
   res.json({ ok: true })
 })

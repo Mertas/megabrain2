@@ -18,7 +18,7 @@ function requireSecret(name: string, envKey: string): string {
 }
 
 export const env = {
-  PORT: parseInt(process.env.PORT || '3001', 10),
+  PORT: parseInt(process.env.PORT || '3042', 10),
   JWT_ACCESS_SECRET: requireSecret('JWT_ACCESS_SECRET', 'JWT_ACCESS_SECRET'),
   JWT_REFRESH_SECRET: requireSecret('JWT_REFRESH_SECRET', 'JWT_REFRESH_SECRET'),
   JWT_ACCESS_EXPIRES: process.env.JWT_ACCESS_EXPIRES || '15m',

@@ -36,6 +36,28 @@
   margin: 0 0 20px;
   overflow: hidden;
   color: #0E2136;
+  position: relative;
+}
+
+.flagBtn {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.3;
+  vertical-align: middle;
+  padding: 0 4px;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.flagged {
+  opacity: 1;
 }
 
 .skipRow {

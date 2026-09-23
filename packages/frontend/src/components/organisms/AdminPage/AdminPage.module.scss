@@ -21,6 +21,20 @@
   gap: 4px;
 }
 
+.flaggedFilter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: $font-size-sm;
+  color: #666;
+  margin: 8px 0;
+  cursor: pointer;
+
+  input {
+    cursor: pointer;
+  }
+}
+
 .pagination {
   display: flex;
   gap: 4px;

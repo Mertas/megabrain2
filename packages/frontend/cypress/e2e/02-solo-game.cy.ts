@@ -8,9 +8,11 @@ interface TestUser {
 describe('Соло-игра', () => {
   it('проходит игру из 10 вопросов с 5 случайными темами', () => {
     cy.fixture('test-users').then((users: TestUser[]) => {
-      cy.request('POST', '/api/auth/login', {
-        login: users[0].login,
-        password: users[0].password,
+      cy.request({
+        method: 'POST',
+        url: '/api/auth/login',
+        body: { login: users[0].login, password: users[0].password },
+        failOnStatusCode: false,
       }).then((res) => {
         cy.visit('/', {
           onBeforeLoad(win) {
@@ -52,5 +54,12 @@ describe('Соло-игра', () => {
     }
 
     cy.get('[data-testid="hero-title"]', { timeout: 8000 }).should('contain', 'Результаты')
+
+    // Verify results screen in detail
+    cy.get('[data-testid="hero-title"]').should('contain', 'Результаты игры')
+    cy.contains('вы ответили верно на').should('exist')
+    cy.contains('Заработано очков:').should('exist')
+    cy.contains('Среднее время на ответ').should('exist')
+    cy.contains('button', 'Новая игра').should('exist')
   })
 })

@@ -1,3 +1,5 @@
+@use '../../../styles/variables' as *;
+
 .timer {
   display: flex;
   gap: 0;
@@ -6,4 +8,24 @@
 
 .paused {
   opacity: 0.6;
+}
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress {
+  width: 100%;
+  height: 4px;
+  background: $color-border;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: $color-accent;
+  transition: width 0.1s linear;
 }

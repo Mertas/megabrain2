@@ -18,7 +18,7 @@ export function createPvPServer(httpServer: HttpServer): SocketServer {
   const io = new SocketServer(httpServer, {
     cors: {
       origin: isDev
-        ? ['http://localhost:5173', 'http://localhost:3001', 'http://localhost:4173']
+        ? ['http://localhost:5142', 'http://localhost:3042', 'http://localhost:4173']
         : (process.env.CORS_ORIGIN || '').split(',').filter(Boolean),
       credentials: true,
     },

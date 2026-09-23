@@ -24,6 +24,7 @@ export const survivalRoute = createRoute({
     const n = useNavigate()
     const [state, setState] = useState<SurvivalState>({ phase: 'setup', session: null, summary: null })
     const [powerupTypes, setPowerupTypes] = useState<PowerupType[]>([])
+    const [lastTopicIds, setLastTopicIds] = useState<number[]>([])
 
     if (!auth.isLoggedIn) {
       return (
@@ -37,6 +38,7 @@ export const survivalRoute = createRoute({
     }
 
     const handleStart = async (topicIds: number[]) => {
+      setLastTopicIds(topicIds)
       try {
         const [session, inv] = await Promise.all([
           startSurvival(topicIds),
@@ -60,8 +62,12 @@ export const survivalRoute = createRoute({
       setState({ phase: 'results', session: null, summary })
     }
 
-    const handleBackToSetup = () => {
-      setState({ phase: 'setup', session: null, summary: null })
+    const handlePlayAgain = () => {
+      if (lastTopicIds.length > 0) {
+        handleStart(lastTopicIds)
+      } else {
+        setState({ phase: 'setup', session: null, summary: null })
+      }
     }
 
     const handleViewLeaderboard = () => {
@@ -91,7 +97,7 @@ export const survivalRoute = createRoute({
         <PageWrap activeNav="survival" breadcrumbs={[{ label: 'Выживание' }, { label: 'Результаты' }]}>
           <SurvivalResults summary={state.summary} />
           <div style={{ textAlign: 'center', marginTop: 24, display: 'flex', gap: 12, justifyContent: 'center' }}>
-            <Button variant="primary" size="sm" onClick={handleBackToSetup}>
+            <Button variant="primary" size="sm" onClick={handlePlayAgain}>
               Играть снова
             </Button>
             <Button variant="link" size="sm" onClick={handleViewLeaderboard}>

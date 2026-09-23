@@ -3,7 +3,7 @@ import { Server as SocketServer, type Socket } from 'socket.io'
 import { verifyAccessToken } from '../../lib/jwt.js'
 import { db } from '../../db/connection.js'
 import { joinQueue, leaveQueue, isInQueue, findMatch, getPlayerGame } from './blitz.lobby.js'
-import { createGame, startRound, processAnswer, getCurrentRound, isGameOver, calculateResults, clearGameTimers, getOpponentUserId } from './blitz.engine.js'
+import { createGame, startRound, processAnswer, getCurrentRound, isGameOver, calculateResults, clearGameTimers, getOpponentUserId, getPlayerIndex } from './blitz.engine.js'
 import type { BlitzGame } from './blitz.types.js'
 
 const isDev = process.env.NODE_ENV !== 'production'
@@ -18,7 +18,7 @@ export function createBlitzServer(httpServer: HttpServer): SocketServer {
   const io = new SocketServer(httpServer, {
     cors: {
       origin: isDev
-        ? ['http://localhost:5173', 'http://localhost:3001', 'http://localhost:4173']
+        ? ['http://localhost:5142', 'http://localhost:3042', 'http://localhost:4173']
         : (process.env.CORS_ORIGIN || '').split(',').filter(Boolean),
       credentials: true,
     },
@@ -90,7 +90,6 @@ export function createBlitzServer(httpServer: HttpServer): SocketServer {
         clearGameTimers(game)
         endRound(io, game)
       } else {
-        // Tell opponent this player answered
         const oppId = getOpponentUserId(game, uid)
         const oppSocket = findSocket(io, oppId)
         if (oppSocket) oppSocket.emit('blitz:opponent-answered')
@@ -124,7 +123,6 @@ export function createBlitzServer(httpServer: HttpServer): SocketServer {
       }
     })
 
-    // Powerup
     socket.on('blitz:use-powerup', (data: { powerupId: string }) => {
       const game = getPlayerGame(uid)
       if (!game) return
@@ -162,19 +160,18 @@ function tryMatch(io: SocketServer) {
   const p1Socket = findSocket(io, match.p1.userId)
   const p2Socket = findSocket(io, match.p2.userId)
 
-  const p1Data = {
+  if (p1Socket) p1Socket.emit('blitz:match-found', {
+    yourIndex: 1,
     opponent: { id: match.p2.userId, login: match.p2.login, nickname: match.p2.nickname, rating: match.p2.rating },
     roundCount: match.p1.roundCount,
     timePerRound: match.p1.timePerRound,
-  }
-  const p2Data = {
+  })
+  if (p2Socket) p2Socket.emit('blitz:match-found', {
+    yourIndex: 2,
     opponent: { id: match.p1.userId, login: match.p1.login, nickname: match.p1.nickname, rating: match.p1.rating },
     roundCount: match.p2.roundCount,
     timePerRound: match.p2.timePerRound,
-  }
-
-  if (p1Socket) p1Socket.emit('blitz:match-found', p1Data)
-  if (p2Socket) p2Socket.emit('blitz:match-found', p2Data)
+  })
 
   let count = 3
   if (p1Socket) p1Socket.emit('blitz:countdown', { seconds: count })
@@ -199,7 +196,6 @@ function startNextRound(io: SocketServer, game: BlitzGame) {
     return
   }
 
-  // Fetch random question from topic pool
   const placeholders = game.topicIds.map(() => '?').join(',')
   const row = db.prepare(
     `SELECT id, text, answer_1, answer_2, answer_3, answer_4, correct_index, note
@@ -212,7 +208,6 @@ function startNextRound(io: SocketServer, game: BlitzGame) {
   }>
 
   if (!row.length) {
-    // Fallback — no questions
     finishGame(io, game)
     return
   }
@@ -226,18 +221,17 @@ function startNextRound(io: SocketServer, game: BlitzGame) {
 
   startRound(game, { id: q.id, text: q.text, answers: shuffled, correctIndex: newCorrectIndex })
 
-  const roundData = {
+  const baseRoundData = {
     roundNumber: game.currentRound,
-    question: { text: q.text, answers: shuffled, note: q.note },
+    question: { id: q.id, text: q.text, answers: shuffled, note: q.note },
     scores: { p1: game.player1.roundsWon, p2: game.player2.roundsWon },
   }
 
   const p1Socket = findSocket(io, game.player1.userId)
   const p2Socket = findSocket(io, game.player2.userId)
-  if (p1Socket) p1Socket.emit('blitz:round-start', roundData)
-  if (p2Socket) p2Socket.emit('blitz:round-start', roundData)
+  if (p1Socket) p1Socket.emit('blitz:round-start', { ...baseRoundData, yourScore: game.player1.roundsWon, opponentScore: game.player2.roundsWon })
+  if (p2Socket) p2Socket.emit('blitz:round-start', { ...baseRoundData, yourScore: game.player2.roundsWon, opponentScore: game.player1.roundsWon })
 
-  // Round timer
   if (game.timePerRound > 0) {
     game.timer = setTimeout(() => {
       endRound(io, game)
@@ -254,17 +248,34 @@ function endRound(io: SocketServer, game: BlitzGame) {
   const p1Socket = findSocket(io, game.player1.userId)
   const p2Socket = findSocket(io, game.player2.userId)
 
-  const resultData = {
+  const correctAnswer = round.answers[round.correctIndex]
+
+  if (p1Socket) p1Socket.emit('blitz:round-result', {
     roundNumber: round.roundNumber,
     winnerId: round.winnerId,
-    p1: { answer: round.p1Answer, correct: round.p1Correct, timeCs: round.p1TimeCs },
-    p2: { answer: round.p2Answer, correct: round.p2Correct, timeCs: round.p2TimeCs },
-    correctAnswer: round.answers[round.correctIndex],
-    scores: { p1: game.player1.roundsWon, p2: game.player2.roundsWon },
-  }
-
-  if (p1Socket) p1Socket.emit('blitz:round-result', resultData)
-  if (p2Socket) p2Socket.emit('blitz:round-result', resultData)
+    yourAnswer: round.p1Answer,
+    opponentAnswer: round.p2Answer,
+    yourCorrect: round.p1Correct,
+    opponentCorrect: round.p2Correct,
+    yourTimeCs: round.p1TimeCs,
+    opponentTimeCs: round.p2TimeCs,
+    correctAnswer,
+    yourScore: game.player1.roundsWon,
+    opponentScore: game.player2.roundsWon,
+  })
+  if (p2Socket) p2Socket.emit('blitz:round-result', {
+    roundNumber: round.roundNumber,
+    winnerId: round.winnerId,
+    yourAnswer: round.p2Answer,
+    opponentAnswer: round.p1Answer,
+    yourCorrect: round.p2Correct,
+    opponentCorrect: round.p1Correct,
+    yourTimeCs: round.p2TimeCs,
+    opponentTimeCs: round.p1TimeCs,
+    correctAnswer,
+    yourScore: game.player2.roundsWon,
+    opponentScore: game.player1.roundsWon,
+  })
 
   setTimeout(() => {
     if (isGameOver(game)) {

@@ -47,16 +47,17 @@ function QuestionsTab() {
   const [data, setData] = useState<AdminPageResult<AdminQuestion> | null>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [flaggedOnly, setFlaggedOnly] = useState(false)
   const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<Partial<AdminQuestion>>({})
 
   const load = useCallback(async () => {
     setLoading(true)
-    const r = await fetchAdminQuestions(page, search)
+    const r = await fetchAdminQuestions(page, search, flaggedOnly)
     setData(r)
     setLoading(false)
-  }, [page, search])
+  }, [page, search, flaggedOnly])
 
   useEffect(() => { load() }, [load])
 
@@ -80,7 +81,7 @@ function QuestionsTab() {
 
   const columns: TableColumn<AdminQuestion>[] = [
     { key: 'id', label: 'ID', width: '50px' },
-    { key: 'text', label: 'Текст', render: (q) => <div className={styles.textCell}>{q.text}</div> },
+    { key: 'text', label: 'Текст', render: (q) => <div className={styles.textCell}>{q.text}{q.flagged ? ' \u{1F6A9}' : ''}</div> },
     { key: 'topic_name', label: 'Тема' },
     { key: 'category_name', label: 'Категория' },
     {
@@ -97,6 +98,10 @@ function QuestionsTab() {
   return (
     <div>
       <SearchForm value={search} onChange={(v) => { setSearch(v); setPage(1) }} />
+      <label className={styles.flaggedFilter}>
+        <input type="checkbox" checked={flaggedOnly} onChange={(e) => { setFlaggedOnly(e.target.checked); setPage(1) }} />
+        {' '}Только отмеченные 🚩
+      </label>
       <Table columns={columns} data={data?.items || []} rowKey={(q) => q.id} loading={loading} />
       {data && data.pages > 1 && (
         <div className={styles.pagination}>

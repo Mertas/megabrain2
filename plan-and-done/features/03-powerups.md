@@ -1,6 +1,6 @@
 # 3. Power-ups (Усиления)
 
-> ✅ **Статус: Фаза 1 реализована** (2026-07-06)
+> ✅ **Статус: Фазы 1+2 реализованы** (2026-07-10)
 
 ---
 
@@ -360,20 +360,20 @@ INSERT INTO powerup_types (id, name, description, category, cost, max_per_game, 
 ## Этапы реализации
 
 ### Фаза 1: Ядро (соло + Survival)
-- [ ] Таблицы `powerup_types`, `user_powerups`, `powerup_usage`
-- [ ] Seed powerup_types
-- [ ] API: `types`, `inventory`, `buy`
-- [ ] `PowerupShop` + `PowerupInventory`
-- [ ] Интеграция с `GameBoard` (fifty-fifty, extra-time, double-points)
-- [ ] Интеграция с `SurvivalBoard` (shield, skip-safe, streak-saver, head-start)
+- [x] Таблицы `powerup_types`, `user_powerups`, `powerup_usage`
+- [x] Seed powerup_types
+- [x] API: `types`, `inventory`, `buy`
+- [x] `PowerupShop` + `PowerupInventory`
+- [x] Интеграция с `GameBoard` (fifty-fifty, extra-time, double-points)
+- [x] Интеграция с `SurvivalBoard` (shield, skip-safe, streak-saver, head-start)
 
 ### Фаза 2: PvP + Blitz
-- [ ] `PowerupLoadout` перед матчем
-- [ ] `PowerupBar` в PvP-интерфейсе
-- [ ] WebSocket события `pvp:use-powerup`, `blitz:use-powerup`
-- [ ] Offensive power-ups: freeze, blind, steal-time, sabotage
-- [ ] Reflect-механика с окном реакции
-- [ ] Серверная валидация
+- [x] `PowerupLoadout` перед матчем
+- [x] `PowerupBar` в PvP-интерфейсе
+- [x] WebSocket события `pvp:use-powerup`, `blitz:use-powerup`
+- [x] Offensive power-ups: freeze, blind, steal-time, sabotage
+- [x] Reflect-механика с окном реакции
+- [x] Серверная валидация
 
 ### Фаза 3: Экономика
 - [ ] Начисление power-ups за игры

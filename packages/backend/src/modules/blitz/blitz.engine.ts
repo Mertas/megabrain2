@@ -42,6 +42,10 @@ export function getPlayerState(game: BlitzGame, userId: number) {
   return game.player1.userId === userId ? game.player1 : game.player2
 }
 
+export function getPlayerIndex(game: BlitzGame, userId: number): 1 | 2 {
+  return game.player1.userId === userId ? 1 : 2
+}
+
 export function processAnswer(
   game: BlitzGame,
   userId: number,
@@ -62,7 +66,7 @@ export function processAnswer(
 
   player.answeredThisRound = true
 
-  const round = game.rounds[game.currentRound]
+  const round = game.rounds[game.currentRound - 1]
   if (!round) return { correct: false, roundEnded: false, winnerId: null }
 
   if (userId === game.player1.userId) {
@@ -125,7 +129,13 @@ export function getCurrentRound(game: BlitzGame): BlitzRoundResult | undefined {
 
 export function isGameOver(game: BlitzGame): boolean {
   const needed = Math.floor(game.roundCount / 2) + 1
-  return game.player1.roundsWon >= needed || game.player2.roundsWon >= needed
+  if (game.player1.roundsWon >= needed || game.player2.roundsWon >= needed) return true
+  // Also end if we've played all rounds (draw/idle prevention)
+  if (game.currentRound >= game.roundCount) return true
+  // Edge case: neither can reach needed wins even with remaining rounds
+  const remaining = game.roundCount - game.currentRound
+  if (game.player1.roundsWon + remaining < needed && game.player2.roundsWon + remaining < needed) return true
+  return false
 }
 
 interface BlitzResults {
@@ -154,7 +164,6 @@ interface BlitzSingleResult {
 }
 
 export function calculateResults(game: BlitzGame, disconnectedUserId?: number): BlitzResults {
-  // Determine winner
   let winnerId: number | null = null
   if (disconnectedUserId) {
     winnerId = disconnectedUserId === game.player1.userId ? game.player2.userId : game.player1.userId
@@ -162,6 +171,8 @@ export function calculateResults(game: BlitzGame, disconnectedUserId?: number): 
     const needed = Math.floor(game.roundCount / 2) + 1
     if (game.player1.roundsWon >= needed) winnerId = game.player1.userId
     else if (game.player2.roundsWon >= needed) winnerId = game.player2.userId
+    else if (game.player1.roundsWon > game.player2.roundsWon) winnerId = game.player1.userId
+    else if (game.player2.roundsWon > game.player1.roundsWon) winnerId = game.player2.userId
   }
 
   const scoreA = winnerId === null ? 0.5 : winnerId === game.player1.userId ? 1 : 0
@@ -201,25 +212,6 @@ export function calculateResults(game: BlitzGame, disconnectedUserId?: number): 
     )
   }
 
-  const roundsSummary = game.rounds.map((r) => ({
-    roundNumber: r.roundNumber,
-    questionText: r.questionText,
-    answers: r.answers,
-    correctAnswer: r.answers[r.correctIndex],
-    yourAnswer: null as string | null,
-    opponentAnswer: null as string | null,
-    yourCorrect: null as boolean | null,
-    opponentCorrect: null as boolean | null,
-    winnerId: r.winnerId,
-  }))
-
-  const p1Rounds = roundsSummary.map((r) => ({
-    ...r,
-    yourAnswer: r.winnerId === game.player1.userId ? (game.rounds.find((x) => x.roundNumber === r.roundNumber)?.p1Answer || null) : r.yourAnswer,
-    opponentAnswer: r.winnerId === game.player1.userId ? (game.rounds.find((x) => x.roundNumber === r.roundNumber)?.p2Answer || null) : r.opponentAnswer,
-  }))
-
-  // Build full results
   const p1RoundsFull = game.rounds.map((r) => ({
     roundNumber: r.roundNumber,
     questionText: r.questionText,
@@ -269,8 +261,8 @@ export function calculateResults(game: BlitzGame, disconnectedUserId?: number): 
 }
 
 export function clearGameTimers(game: BlitzGame): void {
-  if (game.timer) clearTimeout(game.timer)
-  if (game.disconnect1) clearTimeout(game.disconnect1)
-  if (game.disconnect2) clearTimeout(game.disconnect2)
-  if (game.countdownInterval) clearInterval(game.countdownInterval)
+  if (game.timer) { clearTimeout(game.timer); game.timer = null }
+  if (game.disconnect1) { clearTimeout(game.disconnect1); game.disconnect1 = null }
+  if (game.disconnect2) { clearTimeout(game.disconnect2); game.disconnect2 = null }
+  if (game.countdownInterval) { clearInterval(game.countdownInterval); game.countdownInterval = null }
 }
