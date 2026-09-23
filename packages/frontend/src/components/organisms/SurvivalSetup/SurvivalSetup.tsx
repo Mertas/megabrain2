@@ -67,14 +67,14 @@ export function SurvivalSetup({ categories, bestScore, bestStreak, onStart, onVi
         />
       </ConfigCard>
 
-      <ConfigCard label="Ваши рекорды">
-        {(bestScore > 0 || bestStreak > 0) && (
+      {(bestScore > 0 || bestStreak > 0) && (
+        <ConfigCard label="Ваши рекорды">
           <div className={styles.records}>
             {bestScore > 0 && <div className={styles.recordBadge}><span className={styles.recordLabel}>Рекордный счёт:</span><span className={styles.recordValue}>{bestScore}</span></div>}
             {bestStreak > 0 && <div className={styles.recordBadge}><span className={styles.recordLabel}>Рекордный стрик:</span><span className={styles.recordValue}>{bestStreak}</span></div>}
           </div>
-        )}
-      </ConfigCard>
+        </ConfigCard>
+      )}
 
       <SetupActions
         startLabel="Начать выживание"
