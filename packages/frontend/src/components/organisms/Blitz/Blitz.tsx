@@ -8,6 +8,8 @@ import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 import { ConfigCard } from '../../molecules/ConfigCard/ConfigCard'
 import { PowerupSelector } from '../../molecules/PowerupSelector/PowerupSelector'
 import { Text } from '../../atoms/Text/Text'
+import { PageContent } from '../../molecules/PageContent/PageContent'
+import { SetupActions } from '../../molecules/SetupActions/SetupActions'
 import {
   connect, disconnect, joinQueue, cancelQueue, sendAnswer, getSocket, usePowerup,
   type BlitzMatchFound, type BlitzRoundResult, type BlitzGameResult,
@@ -258,7 +260,7 @@ export function Blitz({ categories, token }: Props) {
   // ==== RENDER: setup ====
   if (phase === 'setup') {
     return (
-      <div>
+      <PageContent width="narrow">
         <PageHeader
           icon={'\u26A1'}
           title="Блиц-дуэль"
@@ -270,23 +272,25 @@ export function Blitz({ categories, token }: Props) {
           <TopicList topics={topicData} selectedIds={selectedIds} onSelectSubtopic={handleSelectSubtopic} onSelectAll={handleSelectAll} />
         </ConfigCard>
 
-        <ConfigCard label="Раунды">
-          <Select options={ROUND_OPTIONS} value={String(roundCount)} onChange={(e) => setRoundCount(parseInt(e.target.value))} />
-        </ConfigCard>
-
-        <ConfigCard label="Время на раунд">
-          <Select options={TIME_OPTIONS} value={String(timePerRound)} onChange={(e) => setTimePerRound(parseInt(e.target.value))} />
+        <ConfigCard label="Настройки">
+          <Select label="Раунды" options={ROUND_OPTIONS} value={String(roundCount)} onChange={(e) => setRoundCount(parseInt(e.target.value))} />
+          <Select label="Время на раунд" options={TIME_OPTIONS} value={String(timePerRound)} onChange={(e) => setTimePerRound(parseInt(e.target.value))} />
         </ConfigCard>
 
         {powerupTypes.length > 0 && (
-          <ConfigCard label="Power-ups (до 2)">
+          <ConfigCard label="Power-ups" hint="До 2 усилений за дуэль">
             <PowerupSelector types={powerupTypes} selected={selectedPowerupIds} onChange={setSelectedPowerupIds} max={2} />
           </ConfigCard>
         )}
 
-        {error && <Text variant="error" center as="div">{error}</Text>}
-        <Button variant="primary" size="lg" onClick={handleStart} disabled={selectedIds.length === 0}>Искать соперника</Button>
-      </div>
+        <SetupActions
+          startLabel="Искать соперника"
+          onStart={handleStart}
+          disabled={selectedIds.length === 0}
+          error={error}
+          hint="Выберите хотя бы одну тему"
+        />
+      </PageContent>
     )
   }
 

@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { Button } from '../../atoms/Button/Button'
 import { PageHeader } from '../../molecules/PageHeader/PageHeader'
+import { PageContent } from '../../molecules/PageContent/PageContent'
+import { SetupActions } from '../../molecules/SetupActions/SetupActions'
 import { ConfigCard } from '../../molecules/ConfigCard/ConfigCard'
 import { PowerupSelector } from '../../molecules/PowerupSelector/PowerupSelector'
 import { Text } from '../../atoms/Text/Text'
@@ -384,7 +386,7 @@ export function PvP(_props: PvPProps) {
   const canJoin = selectedTopics.length === maxTopics
 
   return (
-      <div className={styles.wrap}>
+    <PageContent width="narrow">
       <PageHeader
         icon={'\u2694\uFE0F'}
         title="PvP"
@@ -392,16 +394,16 @@ export function PvP(_props: PvPProps) {
         rules={pvpRules}
       />
 
-      <div>
-        <div className={styles.topicHint}>Выберите {maxTopics} тем{maxTopics > 1 ? 'ы' : 'у'}</div>
+      <ConfigCard label="Темы" hint={`Выберите ${maxTopics} тем${maxTopics > 1 ? 'ы' : 'у'}`}>
         <TopicList
           topics={topicsData}
           selectedIds={selectedTopics}
           onSelectSubtopic={handleSelectSubtopic}
           onSelectAll={handleSelectAll}
         />
+      </ConfigCard>
 
-        <ConfigCard>
+      <ConfigCard label="Настройки">
           <div className={styles.configRow}>
           <div className={styles.configCol}>
             <Select label="Вопросов" hint="10 — короткая разминка. 30 — уже серьёзно. 50 — проверка на выносливость. Всё как в обычной жизни, только про эрудицию." options={qtyOptions} value={questionCount} onChange={(e) => { setQuestionCount(e.target.value); setSelectedTopics([]) }} />
@@ -415,21 +417,23 @@ export function PvP(_props: PvPProps) {
           <Checkbox label="Тема должна совпадать" checked={strictTopics} onChange={(e) => setStrictTopics(e.target.checked)} />
           <div className={styles.strictHint}>Включите, чтобы играть строго по выбранным темам. Выключите — и соперник может принести свои. Вдруг у него интереснее.</div>
         </div>
-        </ConfigCard>
-      </div>
+      </ConfigCard>
 
       {powerupTypes.length > 0 && (
-        <PowerupSelector types={powerupTypes} selected={selectedPowerups} onChange={setSelectedPowerups} />
+        <ConfigCard label="Power-ups" hint="До 3 усилений за дуэль">
+          <PowerupSelector types={powerupTypes} selected={selectedPowerups} onChange={setSelectedPowerups} />
+        </ConfigCard>
       )}
 
-      <div className={styles.joinAction}>
-        <Button variant="primary" size="lg" disabled={!canJoin} onClick={handleJoin}>Искать соперника</Button>
-        <Button variant="link" size="sm" onClick={() => window.location.href = '/ratings'}>
-          {'\u{1F3C6}'} Таблица лидеров
-        </Button>
-      </div>
-      {error && <div className={styles.error}>{error}</div>}
-    </div>
+      <SetupActions
+        startLabel="Искать соперника"
+        onStart={handleJoin}
+        disabled={!canJoin}
+        error={error}
+        hint={`Выберите ${maxTopics} тем${maxTopics > 1 ? 'ы' : 'у'}`}
+        secondary={{ label: '\u{1F3C6} Таблица лидеров', href: '/ratings' }}
+      />
+    </PageContent>
   )
 }
 

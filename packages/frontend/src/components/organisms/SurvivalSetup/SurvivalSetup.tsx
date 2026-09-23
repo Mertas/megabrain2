@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react'
-import { Button } from '../../atoms/Button/Button'
 import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 import { ConfigCard } from '../../molecules/ConfigCard/ConfigCard'
 import { TopicList } from '../TopicList/TopicList'
+import { PageContent } from '../../molecules/PageContent/PageContent'
+import { SetupActions } from '../../molecules/SetupActions/SetupActions'
 import type { Topic } from '../../molecules/TopicCard/TopicCard'
 import type { ApiCategory } from '../../../lib/api'
 import styles from './SurvivalSetup.module.scss'
@@ -48,7 +49,7 @@ export function SurvivalSetup({ categories, bestScore, bestStreak, onStart, onVi
   const totalQ = categories.reduce((sum, cat) => sum + cat.topics.reduce((s, t) => s + t.question_count, 0), 0)
 
   return (
-    <div className={styles.wrap}>
+    <PageContent width="narrow">
       <PageHeader
         icon={'\u{1F480}'}
         title="Режим выживания"
@@ -56,15 +57,17 @@ export function SurvivalSetup({ categories, bestScore, bestStreak, onStart, onVi
         rules={survivalRules}
       />
 
-      <TopicList
-        topics={topics}
-        selectedIds={selectedIds}
-        onSelectSubtopic={(id) => setSelectedIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id])}
-        onSelectAll={handleSelectAll}
-        totalQuestions={totalQ}
-      />
+      <ConfigCard label="Темы" hint="Выберите хотя бы одну тему">
+        <TopicList
+          topics={topics}
+          selectedIds={selectedIds}
+          onSelectSubtopic={(id) => setSelectedIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id])}
+          onSelectAll={handleSelectAll}
+          totalQuestions={totalQ}
+        />
+      </ConfigCard>
 
-      <ConfigCard>
+      <ConfigCard label="Ваши рекорды">
         {(bestScore > 0 || bestStreak > 0) && (
           <div className={styles.records}>
             {bestScore > 0 && <div className={styles.recordBadge}><span className={styles.recordLabel}>Рекордный счёт:</span><span className={styles.recordValue}>{bestScore}</span></div>}
@@ -73,12 +76,14 @@ export function SurvivalSetup({ categories, bestScore, bestStreak, onStart, onVi
         )}
       </ConfigCard>
 
-      {error && <p className={styles.error}>{error}</p>}
-
-      <div className={styles.actions}>
-        <Button variant="primary" size="lg" onClick={handleStart} disabled={selectedIds.length === 0}>Начать выживание</Button>
-        <Button variant="link" size="sm" onClick={onViewLeaderboard}>{'\u{1F3C6}'} Таблица лидеров</Button>
-      </div>
-    </div>
+      <SetupActions
+        startLabel="Начать выживание"
+        onStart={handleStart}
+        disabled={selectedIds.length === 0}
+        error={error}
+        hint="Выберите хотя бы одну тему"
+        secondary={{ label: '\u{1F3C6} Таблица лидеров', onClick: onViewLeaderboard }}
+      />
+    </PageContent>
   )
 }

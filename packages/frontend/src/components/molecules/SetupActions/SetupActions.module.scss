@@ -1,0 +1,24 @@
+@use '../../../styles/variables' as *;
+
+.actions {
+  margin-top: $space-5;
+  text-align: center;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-4;
+  flex-wrap: wrap;
+}
+
+.status {
+  margin-top: $space-3;
+  font-size: $font-size-lg;
+  color: $color-text-soft;
+}
+
+.error {
+  color: $color-error;
+}

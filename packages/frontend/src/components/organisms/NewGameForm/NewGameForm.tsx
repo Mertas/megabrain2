@@ -6,8 +6,9 @@ import { TimeSettingRow } from '../../molecules/TimeSettingRow/TimeSettingRow'
 import { TimeEstimator } from '../../molecules/TimeEstimator/TimeEstimator'
 import { Checkbox } from '../../atoms/Checkbox/Checkbox'
 import { Select } from '../../atoms/Select/Select'
-import { Button } from '../../atoms/Button/Button'
 import { PowerupSelector } from '../../molecules/PowerupSelector/PowerupSelector'
+import { PageContent } from '../../molecules/PageContent/PageContent'
+import { SetupActions } from '../../molecules/SetupActions/SetupActions'
 import { fetchPowerupTypes, type PowerupType } from '../../../lib/api'
 import type { Topic } from '../../molecules/TopicCard/TopicCard'
 import type { ApiCategory, SavedGameConfig } from '../../../lib/api'
@@ -124,20 +125,20 @@ export function NewGameForm({ categories, lastConfig, onStart }: NewGameFormProp
   const qtyForEstimate = parseInt(questionCount) || selectedQ
 
   return (
-    <div className={styles.wrap}>
+    <PageContent width="narrow">
       <PageHeader icon="§" title="Новая игра" description="Классическая викторина. Выберите темы, настройте время и количество вопросов." rules={soloRules} />
 
-      
+      <ConfigCard label="Темы" hint="Выберите хотя бы одну подтему">
+        <TopicList
+          topics={topics}
+          selectedIds={selectedIds}
+          onSelectSubtopic={(id) => setSelectedIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id])}
+          onSelectAll={handleSelectAll}
+          totalQuestions={totalQ}
+        />
+      </ConfigCard>
 
-      <TopicList
-        topics={topics}
-        selectedIds={selectedIds}
-        onSelectSubtopic={(id) => setSelectedIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id])}
-        onSelectAll={handleSelectAll}
-        totalQuestions={totalQ}
-      />
-
-      <ConfigCard>
+      <ConfigCard label="Настройки">
         <Select label="Количество вопросов" hint="Сколько вопросов будет в игре. 10 — быстрая разминка, 50 — марафон, 100 — на весь вечер." options={qtyOptions} value={questionCount} onChange={(e) => setQuestionCount(e.target.value)} data-testid="question-count" />
 
         <div className={styles.optionsRow}>
@@ -162,16 +163,19 @@ export function NewGameForm({ categories, lastConfig, onStart }: NewGameFormProp
       </ConfigCard>
 
       {powerupTypes.length > 0 && (
-        <PowerupSelector types={powerupTypes} selected={selectedPowerups} onChange={setSelectedPowerups} />
+        <ConfigCard label="Power-ups" hint="До 3 усилений за игру">
+          <PowerupSelector types={powerupTypes} selected={selectedPowerups} onChange={setSelectedPowerups} />
+        </ConfigCard>
       )}
 
-      <div className={styles.actions}>
-        <Button variant="primary" size="lg" onClick={handleStart} disabled={!canStart} data-testid="solo-start">Начать игру</Button>
-        <Button variant="link" size="sm" onClick={() => window.location.href = '/powerups'}>
-          {'\u2728'} Магазин Power-ups
-        </Button>
-        {!canStart && <div className={styles.hint}>Выберите хотя бы одну подтему</div>}
-      </div>
-    </div>
+      <SetupActions
+        startLabel="Начать игру"
+        onStart={handleStart}
+        disabled={!canStart}
+        hint="Выберите хотя бы одну подтему"
+        secondary={{ label: '\u2728 Магазин Power-ups', href: '/powerups' }}
+        testId="solo-start"
+      />
+    </PageContent>
   )
 }
