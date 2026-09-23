@@ -17,5 +17,8 @@
   },
   "dependencies": {
     "sql.js": "^1.14.1"
+  },
+  "allowScripts": {
+    "better-sqlite3": true
   }
 }
