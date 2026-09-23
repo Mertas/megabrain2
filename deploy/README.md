@@ -42,6 +42,15 @@ ssh gds-vdsina /srv/megabrain/rollback.sh
 ssh gds-vdsina /srv/megabrain/backup.sh
 ```
 
+## Локальная разработка и версия Node
+
+- **Локально (dev): Node 20** — `.nvmrc` в корне (`nvm use` подхватит сам). Под 20 у `better-sqlite3`
+  есть готовый бинарник; под Node 24 его нет, а собрать локально нечем (нет C++ workload у VS).
+- **Прод: Node 22** (на сервере `better-sqlite3` ставится из prebuild при `npm ci`).
+- `better-sqlite3` — нативный модуль: при смене версии Node в nvm его надо пересобрать:
+  `npm rebuild better-sqlite3` (или `npx prebuild-install --runtime node --target <версия>`).
+  Симптом несовпадения: `was compiled against a different Node.js version using NODE_MODULE_VERSION N`.
+
 ## Важные факты
 
 - Секреты — только в `/srv/megabrain/shared/.env` (chmod 600): PORT, NODE_ENV=production,
