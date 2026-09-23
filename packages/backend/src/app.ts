@@ -27,6 +27,10 @@ const allowedOrigins = isDev
 export function createApp() {
   const app = express()
 
+  // За nginx (X-Forwarded-For ставит прокси): без этого rate-limit видит IP прокси
+  // у всех клиентов сразу — одно ведро на весь интернет.
+  app.set('trust proxy', 'loopback')
+
   app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
