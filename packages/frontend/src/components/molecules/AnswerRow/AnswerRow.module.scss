@@ -1,3 +1,4 @@
+@use '../../../styles/variables' as *;
 .row {
   display: flex;
   gap: 6px;
@@ -9,7 +10,7 @@
   width: 20px;
   font-size: 14px;
   font-weight: 600;
-  color: #182C3F;
+  color: $color-bg-dark;
   text-align: center;
   flex-shrink: 0;
 }
@@ -17,12 +18,12 @@
 .input {
   flex: 1;
   padding: 6px 10px;
-  border: 1px solid #C5C9CD;
+  border: 1px solid $color-border;
   border-radius: 4px;
   font-size: 13px;
   outline: none;
 
   &:focus {
-    border-color: #F9A253;
+    border-color: $color-primary;
   }
 }

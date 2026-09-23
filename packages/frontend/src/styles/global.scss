@@ -180,7 +180,9 @@
 
 .b-copyrights {
   font-size: $font-size-sm;
-  padding: 0 29px 0 0;
+  padding: 0 12px 0 0;
+  max-width: 175px;
+  overflow-wrap: break-word;
   color: $color-text-light;
 
   a {

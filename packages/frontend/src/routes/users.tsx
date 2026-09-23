@@ -7,6 +7,8 @@ import { fetchUserProfile, updateProfile, ApiError, type UserProfileData } from 
 import { getEloIcon } from '../lib/icons'
 import { useAuth } from '../context/auth'
 import { Center } from '../components/atoms/Center/Center'
+import { PageHeader } from '../components/molecules/PageHeader/PageHeader'
+import { PageContent } from '../components/molecules/PageContent/PageContent'
 import { rootRoute, PageWrap } from './base'
 
 export const usersListRoute = createRoute({
@@ -15,7 +17,7 @@ export const usersListRoute = createRoute({
   component: function UsersPageRoute() {
     const n = useNavigate()
     return (
-      <PageWrap activeNav="people" breadcrumbs={[{ label: 'Люди' }]}>
+      <PageWrap route="users">
         <UsersPage onNavigate={(s) => { if (s.startsWith('profile:')) n({ to: '/users/$login', params: { login: s.slice(8) } as any }) }} />
       </PageWrap>
     )
@@ -38,17 +40,24 @@ export const userRoute = createRoute({
       fetchUserProfile(login).then(setProfile).catch((e) => setError(e instanceof ApiError ? e.message : 'Ошибка')).finally(() => setLoading(false))
     }, [login])
 
-    if (loading) return <PageWrap activeNav="people" breadcrumbs={[{ label: login }]}><Center padding={60}><Spinner size="md" /></Center></PageWrap>
-    if (error || !profile) return <PageWrap activeNav="people" breadcrumbs={[{ label: login }]}><Center padding={60}><h2>Не найдено</h2><p style={{ color: '#666' }}>{error || 'Пользователь не существует'}</p></Center></PageWrap>
+    if (loading) return <PageWrap route="user"><Center padding={60}><Spinner size="md" /></Center></PageWrap>
+    if (error || !profile) return <PageWrap route="user"><Center padding={60}><h2>Не найдено</h2><p style={{ color: '#666' }}>{error || 'Пользователь не существует'}</p></Center></PageWrap>
 
     const isOwner = auth.user?.id === profile.id
     return (
-      <PageWrap activeNav="people" breadcrumbs={[{ label: profile.nickname || login }]}>
+      <PageWrap route="user" crumbTrail={['Люди', profile.nickname]}>
+        <PageContent>
+        <PageHeader
+          icon={profile.icon}
+          title={profile.nickname}
+          description={[profile.login, profile.location].filter(Boolean).join(' · ')}
+        />
         <UserProfile
           user={{ level: profile.level, icon: getEloIcon(profile.elo), nickname: profile.nickname, name: profile.name, login: profile.login, location: profile.location, firstSeen: profile.firstSeen, topics: profile.topics, stats: profile.stats }}
           isOwner={isOwner}
           onSave={isOwner ? async (d) => { const updated = await updateProfile(profile.id, d); setProfile({ ...profile, ...updated }) } : undefined}
         />
+        </PageContent>
       </PageWrap>
     )
   },

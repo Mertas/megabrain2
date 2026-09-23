@@ -1,3 +1,4 @@
+@use '../../../styles/variables' as *;
 .quitRow {
   display: flex;
   justify-content: flex-end;
@@ -10,7 +11,7 @@
   align-items: center;
   margin-bottom: 8px;
   padding: 8px 14px;
-  background: #EDEBD2;
+  background: $color-bg-light;
   border-radius: 6px;
 }
 
@@ -33,7 +34,7 @@
   margin-left: 8px;
   font-size: 13px;
   font-weight: 700;
-  color: #FF6633;
+  color: $color-accent;
   animation: flashText 0.5s ease-in-out 3;
 }
 
@@ -45,7 +46,7 @@
 .score {
   font-size: 16px;
   font-weight: 700;
-  color: #182C3F;
+  color: $color-bg-dark;
 }
 
 .timerRow {
@@ -59,13 +60,13 @@
   align-items: center;
   gap: 18px;
   font-size: 14px;
-  color: #5A7184;
+  color: $color-text-soft;
   margin-bottom: 16px;
 }
 
 .streak {
   font-weight: 700;
-  color: #FF6633;
+  color: $color-accent;
 }
 
 .difficulty {
@@ -89,7 +90,7 @@
   line-height: 1.5;
   margin-bottom: 20px;
   text-align: center;
-  color: #0E2136;
+  color: $color-text-dark;
 }
 
 .flagBtn {
@@ -116,11 +117,11 @@
 .note {
   margin-top: 12px;
   padding: 10px 14px;
-  background: #EDEBD2;
+  background: $color-bg-light;
   border-radius: 6px;
   font-size: 13px;
   line-height: 1.5;
-  color: #0E2136;
+  color: $color-text-dark;
   font-style: italic;
 }
 
@@ -137,6 +138,6 @@
 .fiftyFifty {
   margin-top: 8px;
   font-size: 13px;
-  color: #F9A253;
+  color: $color-primary;
   text-align: center;
 }

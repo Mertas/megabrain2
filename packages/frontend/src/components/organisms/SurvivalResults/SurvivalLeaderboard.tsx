@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { fetchSurvivalLeaderboard, type SurvivalLeaderboardResult } from '../../../lib/api'
 import styles from './SurvivalLeaderboard.module.scss'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 
 export function SurvivalLeaderboard() {
   const [period, setPeriod] = useState<'all' | 'weekly' | 'daily'>('all')
@@ -21,7 +22,7 @@ export function SurvivalLeaderboard() {
   return (
     <div className={styles.wrap}>
       <div className={styles.header}>
-        <h1 className={styles.title}>{'\u{1F3C6}'} Таблица лидеров — Выживание</h1>
+        <PageHeader icon={'\u{1F3C6}'} title="Таблица лидеров — Выживание" />
         <div className={styles.tabs}>
           {periods.map((p) => (
             <button

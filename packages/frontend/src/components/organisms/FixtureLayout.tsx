@@ -1,10 +1,9 @@
 import { Layout } from './Layout/Layout'
-import type { NavKey } from '../../lib/navItems'
 import type { ReactNode } from 'react'
 
 interface FixtureLayoutProps {
   title: string
-  nav?: NavKey
+  nav?: string
   children: ReactNode
 }
 

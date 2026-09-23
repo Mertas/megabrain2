@@ -278,7 +278,7 @@ export function SurvivalBoard({
         <div className={styles.score}>{score} очков</div>
       </div>
 
-      <div className={styles.timerRow}><Timer elapsedCentiseconds={displayCs} /></div>
+      <div className={styles.timerRow}><Timer value={displayCs} /></div>
 
       <div className={styles.progress}>
         <span>Вопрос {questionNumber}</span>

@@ -1,3 +1,4 @@
+@use '../../../styles/variables' as *;
 .wrap {
   max-width: 700px;
   margin: 0 auto;
@@ -12,7 +13,7 @@
 .title {
   font-size: 22px;
   font-weight: 700;
-  color: #182C3F;
+  color: $color-bg-dark;
   margin-bottom: 16px;
 }
 
@@ -20,7 +21,7 @@
   display: flex;
   justify-content: center;
   gap: 4px;
-  background: #EDEBD2;
+  background: $color-bg-light;
   border-radius: 8px;
   padding: 4px;
   display: inline-flex;
@@ -33,16 +34,16 @@
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  color: #5A7184;
+  color: $color-text-soft;
   transition: all 0.2s;
 
   &:hover {
-    color: #182C3F;
+    color: $color-bg-dark;
   }
 }
 
 .tabActive {
-  background: #F9A253;
+  background: $color-primary;
   color: #fff;
   font-weight: 600;
 
@@ -54,8 +55,8 @@
 .myRank {
   text-align: center;
   padding: 12px;
-  background: #182C3F;
-  color: #F9A253;
+  background: $color-bg-dark;
+  color: $color-primary;
   border-radius: 8px;
   font-size: 15px;
   margin-bottom: 20px;
@@ -63,13 +64,13 @@
 
 .loading {
   text-align: center;
-  color: #5A7184;
+  color: $color-text-soft;
   padding: 40px;
 }
 
 .empty {
   text-align: center;
-  color: #5A7184;
+  color: $color-text-soft;
   padding: 40px;
   font-size: 15px;
 }
@@ -86,16 +87,16 @@
   th {
     padding: 10px 12px;
     text-align: left;
-    color: #5A7184;
+    color: $color-text-soft;
     font-weight: 600;
-    border-bottom: 2px solid #EDEBD2;
+    border-bottom: 2px solid $color-bg-light;
     white-space: nowrap;
   }
 
   td {
     padding: 10px 12px;
-    border-bottom: 1px solid #EDEBD2;
-    color: #182C3F;
+    border-bottom: 1px solid $color-bg-light;
+    color: $color-bg-dark;
   }
 }
 
@@ -115,11 +116,11 @@
 
 .score {
   font-weight: 700;
-  color: #FF6633;
+  color: $color-accent;
 }
 
 .date {
-  color: #5A7184;
+  color: $color-text-soft;
   font-size: 13px;
   white-space: nowrap;
 }

@@ -305,7 +305,7 @@ export function GameBoard({ questions, timeMode, timeSeconds, isAdmin = false, p
       </div>
 
       <div className={styles.timerRow}>
-        <Timer elapsedCentiseconds={displayCs} />
+        <Timer value={displayCs} />
       </div>
 
       <div className={styles.progress}>

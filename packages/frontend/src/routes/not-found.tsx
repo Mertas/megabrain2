@@ -97,7 +97,7 @@ function ParallaxPoster() {
 export function NotFoundPage() {
 
   return (
-    <PageWrap activeNav="game" breadcrumbs={[{ label: '404' }]}>
+    <PageWrap route="notFound">
       <div style={{ textAlign: 'center', padding: '24px 16px 40px' }}>
         <ParallaxPoster />
         <h1 style={{ fontSize: 48, margin: '0 0 12px', color: '#FF6633' }}>404</h1>

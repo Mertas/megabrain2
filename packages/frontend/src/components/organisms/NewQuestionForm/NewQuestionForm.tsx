@@ -7,6 +7,7 @@ import { Button } from '../../atoms/Button/Button'
 import { FieldNote } from '../../atoms/FieldNote/FieldNote'
 import { SearchCheck } from '../../molecules/SearchCheck/SearchCheck'
 import type { Topic } from '../../molecules/TopicCard/TopicCard'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 
 export interface NewQuestionFormProps {
   topics: Topic[]
@@ -37,7 +38,7 @@ export function NewQuestionForm({ topics: _topics, onSubmit }: NewQuestionFormPr
 
   return (
     <div>
-      <h1>Новый вопрос</h1>
+      <PageHeader title="Новый вопрос" />
 
       <div style={{ marginBottom: 16 }}>
         <Tabs items={mediaTabs} activeKey={mediaTab} onChange={setMediaTab}>

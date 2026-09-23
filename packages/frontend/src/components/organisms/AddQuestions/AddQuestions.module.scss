@@ -1,3 +1,4 @@
+@use '../../../styles/variables' as *;
 .sectionRow { margin-bottom: 20px; }
 .topicCol { min-width: 300px; }
 .createCol { flex: 1; min-width: 160px; }
@@ -18,7 +19,7 @@
 .groupIdx {
   font-size: 15px;
   font-weight: 700;
-  color: #182C3F;
+  color: $color-bg-dark;
 }
 
 .groupCount {
@@ -45,7 +46,7 @@
 }
 
 .candidateSelected {
-  border-color: #37CE74;
+  border-color: $color-success;
   background: #F0FFF4;
 }
 
@@ -74,7 +75,7 @@
 }
 
 .matchInput {
-  outline: 2px solid #FF6633;
+  outline: 2px solid $color-accent;
   outline-offset: 1px;
   border-radius: 3px;
 }

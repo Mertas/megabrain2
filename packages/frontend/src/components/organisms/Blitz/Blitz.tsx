@@ -4,8 +4,7 @@ import { Select } from '../../atoms/Select/Select'
 import { Timer } from '../../molecules/Timer/Timer'
 import { AnswerGrid, type AnswerCheckResult } from '../../molecules/AnswerGrid/AnswerGrid'
 import { TopicList } from '../TopicList/TopicList'
-import { Hero } from '../../molecules/Hero/Hero'
-import { Rules } from '../../molecules/Rules/Rules'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 import { ConfigCard } from '../../molecules/ConfigCard/ConfigCard'
 import { PowerupSelector } from '../../molecules/PowerupSelector/PowerupSelector'
 import { Text } from '../../atoms/Text/Text'
@@ -260,8 +259,12 @@ export function Blitz({ categories, token }: Props) {
   if (phase === 'setup') {
     return (
       <div>
-        <Hero mode="blitz" />
-        <Rules items={blitzRules} />
+        <PageHeader
+          icon={'\u26A1'}
+          title="Блиц-дуэль"
+          description="Один вопрос на двоих. Кто первый ответит правильно — забирает раунд. Скорость решает!"
+          rules={blitzRules}
+        />
 
         <ConfigCard label="Темы" hint="Выберите хотя бы одну категорию">
           <TopicList topics={topicData} selectedIds={selectedIds} onSelectSubtopic={handleSelectSubtopic} onSelectAll={handleSelectAll} />
@@ -277,7 +280,7 @@ export function Blitz({ categories, token }: Props) {
 
         {powerupTypes.length > 0 && (
           <ConfigCard label="Power-ups (до 2)">
-            <PowerupSelector available={powerupTypes} selectedIds={selectedPowerupIds} onChange={setSelectedPowerupIds} maxSelect={2} />
+            <PowerupSelector types={powerupTypes} selected={selectedPowerupIds} onChange={setSelectedPowerupIds} max={2} />
           </ConfigCard>
         )}
 
@@ -339,7 +342,7 @@ export function Blitz({ categories, token }: Props) {
           {/* Timer */}
           {phase === 'playing' && (
             <div className={styles.timerRow}>
-              <Timer totalCs={timePerRound * 100} displayCs={timeMs} />
+              <Timer total={timePerRound * 100} value={timeMs} />
             </div>
           )}
         </>

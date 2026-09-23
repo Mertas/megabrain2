@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { Button } from '../../atoms/Button/Button'
-import { Hero } from '../../molecules/Hero/Hero'
-import { Rules } from '../../molecules/Rules/Rules'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 import { ConfigCard } from '../../molecules/ConfigCard/ConfigCard'
 import { PowerupSelector } from '../../molecules/PowerupSelector/PowerupSelector'
 import { Text } from '../../atoms/Text/Text'
@@ -298,7 +297,7 @@ export function PvP(_props: PvPProps) {
         </div>
 
         <div className={styles.timerRow}>
-          <Timer elapsedCentiseconds={displayCs} />
+          <Timer value={displayCs} />
         </div>
 
         <div className={styles.progress}>
@@ -386,9 +385,12 @@ export function PvP(_props: PvPProps) {
 
   return (
       <div className={styles.wrap}>
-      <Hero icon={'\u2694\uFE0F'} title="PvP" description="Сразитесь с живым соперником. Одинаковые вопросы, одновременные ответы — побеждает самый эрудированный."       />
-
-      <Rules items={pvpRules} />
+      <PageHeader
+        icon={'\u2694\uFE0F'}
+        title="PvP"
+        description="Сразитесь с живым соперником. Одинаковые вопросы, одновременные ответы — побеждает самый эрудированный."
+        rules={pvpRules}
+      />
 
       <div>
         <div className={styles.topicHint}>Выберите {maxTopics} тем{maxTopics > 1 ? 'ы' : 'у'}</div>
@@ -458,7 +460,7 @@ export function PvPRatings() {
 
   return (
     <div>
-      <h1 className={styles.ratingTitle}>Рейтинг PvP</h1>
+      <PageHeader title="Рейтинг PvP" />
       <Table columns={columns} data={data?.items || []} rowKey={(r) => r.userId} loading={loading} />
       {data && data.pages > 1 && (
         <div className={styles.ratingPagination}>

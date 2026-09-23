@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { TopicList } from '../TopicList/TopicList'
-import { Hero } from '../../molecules/Hero/Hero'
-import { Rules } from '../../molecules/Rules/Rules'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 import { ConfigCard } from '../../molecules/ConfigCard/ConfigCard'
 import { TimeSettingRow } from '../../molecules/TimeSettingRow/TimeSettingRow'
 import { TimeEstimator } from '../../molecules/TimeEstimator/TimeEstimator'
@@ -126,9 +125,9 @@ export function NewGameForm({ categories, lastConfig, onStart }: NewGameFormProp
 
   return (
     <div className={styles.wrap}>
-      <Hero icon="§" title="Новая игра" description="Классическая викторина. Выберите темы, настройте время и количество вопросов." />
+      <PageHeader icon="§" title="Новая игра" description="Классическая викторина. Выберите темы, настройте время и количество вопросов." rules={soloRules} />
 
-      <Rules items={soloRules} />
+      
 
       <TopicList
         topics={topics}

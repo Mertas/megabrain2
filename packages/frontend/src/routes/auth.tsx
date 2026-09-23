@@ -31,7 +31,7 @@ export const loginRoute = createRoute({
     }
 
     return (
-      <PageWrap activeNav="game" breadcrumbs={[{ label: 'Вход' }]}>
+      <PageWrap route="login">
         <AuthForm mode="login" onSubmit={submit} initialLogin={savedLogin} error={error} fieldErrors={fieldErrs} onSwitchMode={(m) => n({ to: `/${m === 'register' ? 'register' : m === 'forgot' ? 'forgot-password' : 'login'}` as any })} />
       </PageWrap>
     )
@@ -60,7 +60,7 @@ export const registerRoute = createRoute({
     }
 
     return (
-      <PageWrap activeNav="game" breadcrumbs={[{ label: 'Регистрация' }]}>
+      <PageWrap route="register">
         <AuthForm mode="register" onSubmit={submit} error={error} fieldErrors={fieldErrs} onSwitchMode={(m) => n({ to: `/${m === 'login' ? 'login' : 'register'}` as any })} />
       </PageWrap>
     )
@@ -91,7 +91,7 @@ export const forgotRoute = createRoute({
     }
 
     return (
-      <PageWrap activeNav="game" breadcrumbs={[{ label: 'Восстановление пароля' }]}>
+      <PageWrap route="forgot">
         <AuthForm mode="forgot" onSubmit={submit} error={error} fieldErrors={fieldErrs} onSwitchMode={(m) => n({ to: `/${m === 'login' ? 'login' : 'forgot-password'}` as any })} />
       </PageWrap>
     )
@@ -121,7 +121,7 @@ export const resetRoute = createRoute({
     }, [token, auth])
 
     return (
-      <PageWrap activeNav="game" breadcrumbs={[{ label: 'Новый пароль' }]}>
+      <PageWrap route="reset">
         {!token ? <Center padding={40}>Нет токена.</Center>
         : valid === null ? <Center padding={40}>Проверяем ссылку...</Center>
         : valid === false ? <Center padding={40}><h2 style={{ fontSize: 19, color: '#FF0000' }}>Ссылка протухла</h2><p style={{ fontSize: 14, color: '#666', marginBottom: 20 }}>{jokes[Math.floor(Math.random() * jokes.length)]}</p></Center>

@@ -5,6 +5,7 @@ import { Tooltip } from '../../atoms/Tooltip/Tooltip'
 import { checkPassword } from '../../../lib/passwordStrength'
 import { StrengthBar } from '../../molecules/StrengthBar/StrengthBar'
 import styles from './AuthForm.module.scss'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset'
 
@@ -56,7 +57,7 @@ export function AuthForm({ mode, onSubmit, onSwitchMode, error, fieldErrors = {}
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <h1 className={styles.title}>{title}</h1>
+        <PageHeader title={title} />
 
         {mode === 'forgot' && (
           <p className={styles.desc}>Введите логин, и мы отправим ссылку для сброса пароля.</p>

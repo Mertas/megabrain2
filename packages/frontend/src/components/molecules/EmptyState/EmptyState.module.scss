@@ -1,0 +1,29 @@
+@use '../../../styles/variables' as *;
+
+.wrap {
+  text-align: center;
+  padding: $space-6 $space-4;
+  color: $color-text-dark;
+}
+
+.icon {
+  font-size: $font-size-2xl;
+  opacity: 0.5;
+  margin-bottom: $space-2;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+}
+
+.desc {
+  margin-top: $space-1;
+  color: $color-text-soft;
+}
+
+.action {
+  margin-top: $space-4;
+  display: flex;
+  justify-content: center;
+}

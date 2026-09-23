@@ -30,7 +30,7 @@ export const gameRoute = createRoute({
 
     if (store.questions.length === 0) {
       return (
-        <PageWrap activeNav="game" breadcrumbs={[{ label: 'Игра' }, { label: 'Нет вопросов' }]}>
+        <PageWrap route="game">
           <Center padding={60}>
             <Text as="p">Нет вопросов. Начните новую игру.</Text>
             <Button variant="primary" size="sm" onClick={() => n({ to: '/' })} style={{ marginTop: 12 }}>Новая игра</Button>
@@ -75,7 +75,7 @@ export const gameRoute = createRoute({
     if (finished) {
       const s = getGameStore()
       return (
-        <PageWrap activeNav="game" breadcrumbs={[{ label: 'Игра' }, { label: 'Результаты' }]}>
+        <PageWrap route="game">
           <GameResults result={s.result!} score={s.scoreResult || undefined} />
           <div style={{ textAlign: 'center', marginTop: 24 }}>
             <Button variant="link" size="sm" onClick={handlePlayAgain}>Новая игра</Button>
@@ -85,7 +85,7 @@ export const gameRoute = createRoute({
     }
 
     return (
-      <PageWrap activeNav="game" breadcrumbs={[{ label: 'Игра' }, { label: 'Астрономия' }]}>
+      <PageWrap route="game">
         <GameBoard questions={store.questions} timeMode={store.timeMode} timeSeconds={store.timeSeconds} isAdmin={auth.isAdmin} powerups={powerupTypes} onFinish={handleFinish} />
       </PageWrap>
     )

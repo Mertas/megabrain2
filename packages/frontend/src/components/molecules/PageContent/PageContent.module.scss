@@ -1,0 +1,18 @@
+@use '../../../styles/variables' as *;
+
+.content {
+  margin: 0 auto;
+  padding: $space-5 0;
+}
+
+.narrow {
+  max-width: $content-narrow;
+}
+
+.default {
+  max-width: $content-width;
+}
+
+.wide {
+  max-width: $content-wide;
+}

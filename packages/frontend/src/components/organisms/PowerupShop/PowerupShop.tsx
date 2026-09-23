@@ -6,6 +6,7 @@ import {
   type PowerupType, type UserPowerup,
 } from '../../../lib/api'
 import styles from './PowerupShop.module.scss'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 
 function modeName(availableIn: string): string {
   const map: Record<string, string> = {
@@ -76,7 +77,7 @@ export function PowerupShop() {
   return (
     <div className={styles.wrap}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Power-ups</h1>
+        <PageHeader title="Power-ups" description="Усиления для соло, выживания, PvP и блиц-дуэлей." />
         <div className={styles.balance}>
           Доступно очков: <strong>{score}</strong>
         </div>

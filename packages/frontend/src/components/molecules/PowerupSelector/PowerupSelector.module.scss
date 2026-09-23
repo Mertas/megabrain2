@@ -1,13 +1,14 @@
+@use '../../../styles/variables' as *;
 .wrap {
   padding: 12px 14px;
-  background: #EDEBD2;
+  background: $color-bg-light;
   border-radius: 8px;
   margin-bottom: 16px;
 }
 
 .title {
   font-size: 13px;
-  color: #182C3F;
+  color: $color-bg-dark;
   font-weight: 600;
   margin-bottom: 8px;
 }
@@ -29,7 +30,7 @@
   align-items: center;
   gap: 4px;
 
-  &:hover:not(:disabled) { border-color: #F9A253; }
+  &:hover:not(:disabled) { border-color: $color-primary; }
 
   &:disabled {
     opacity: 0.4;
@@ -38,12 +39,12 @@
 }
 
 .selected {
-  border-color: #F9A253;
+  border-color: $color-primary;
   background: #FFF8F0;
 }
 
 .keys {
   margin-top: 8px;
   font-size: 12px;
-  color: #5A7184;
+  color: $color-text-soft;
 }

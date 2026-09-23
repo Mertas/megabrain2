@@ -14,6 +14,7 @@ import {
   type AdminQuestion, type AdminCategory, type AdminUser, type AdminPageResult,
 } from '../../../lib/api'
 import styles from './AdminPage.module.scss'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 
 type Tab = 'questions' | 'categories' | 'users'
 
@@ -22,7 +23,7 @@ export function AdminPage() {
 
   return (
     <div>
-      <h1 className={styles.title}>Админка</h1>
+      <PageHeader title="Админка" />
       <Tabs
         items={[
           { key: 'questions', label: 'Вопросы' },

@@ -5,6 +5,7 @@ import { Table, type TableColumn } from '../../molecules/Table/Table'
 import { fetchUsers, type UserListItem, type AdminPageResult } from '../../../lib/api'
 import { getEloIcon } from '../../../lib/icons'
 import styles from './UsersPage.module.scss'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 
 export interface UsersPageProps {
   onNavigate?: (step: string) => void
@@ -40,7 +41,7 @@ export function UsersPage({ onNavigate }: UsersPageProps) {
 
   return (
     <div>
-      <h1 className={styles.title}>Люди</h1>
+      <PageHeader title="Люди" />
       <SearchForm value={search} onChange={(v) => { setSearch(v); setPage(1) }} />
       <Table columns={columns} data={data?.items || []} rowKey={(u) => u.id} loading={loading} />
       {data && data.pages > 1 && (

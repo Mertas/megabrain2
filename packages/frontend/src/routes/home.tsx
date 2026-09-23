@@ -34,7 +34,7 @@ export const indexRoute = createRoute({
     }
 
     return (
-      <PageWrap activeNav="game" breadcrumbs={[{ label: 'Игра' }, { label: 'Новая игра' }]}>
+      <PageWrap route="home">
         <NewGameForm categories={auth.categories} lastConfig={auth.lastConfig} onStart={handleStart} />
       </PageWrap>
     )

@@ -1,6 +1,25 @@
 @use '../../../styles/variables' as *;
 @use '../../../styles/mixins' as *;
 
+// Группы меню: подпись группы + список пунктов
+.group {
+  margin-bottom: $space-3;
+}
+
+.groupTitle {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $color-text-soft;
+  padding: 0 12px $space-1;
+}
+
+.groupList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .navLink {
   display: block;
   width: 150px;

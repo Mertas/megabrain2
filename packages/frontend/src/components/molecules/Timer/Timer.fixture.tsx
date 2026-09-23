@@ -17,20 +17,23 @@ function DemoTimer({ start }: { start: number }) {
     const id = setInterval(() => setCs((c) => c + 1), 10)
     return () => clearInterval(id)
   }, [])
-  return <Timer elapsedCentiseconds={cs} />
+  return <Timer value={cs} />
 }
 
 export default function TimerFixture() {
   return (
     <FixtureLayout title="Timer">
       <Section title="Static: 00:12.45">
-        <Timer elapsedCentiseconds={1245} />
+        <Timer value={1245} />
       </Section>
       <Section title="Static: 01:30.00">
-        <Timer elapsedCentiseconds={9000} />
+        <Timer value={9000} />
       </Section>
       <Section title="Live (incrementing)">
         <DemoTimer start={5800} />
+      </Section>
+      <Section title="С полосой прогресса (15 с)">
+        <Timer value={420} total={1500} />
       </Section>
     </FixtureLayout>
   )

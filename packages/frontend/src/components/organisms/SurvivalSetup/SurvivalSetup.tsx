@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Button } from '../../atoms/Button/Button'
-import { Hero } from '../../molecules/Hero/Hero'
-import { Rules } from '../../molecules/Rules/Rules'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 import { ConfigCard } from '../../molecules/ConfigCard/ConfigCard'
 import { TopicList } from '../TopicList/TopicList'
 import type { Topic } from '../../molecules/TopicCard/TopicCard'
@@ -50,13 +49,12 @@ export function SurvivalSetup({ categories, bestScore, bestStreak, onStart, onVi
 
   return (
     <div className={styles.wrap}>
-      <Hero
+      <PageHeader
         icon={'\u{1F480}'}
         title="Режим выживания"
         description="Бесконечный поток вопросов. Три жизни. Одна ошибка — минус жизнь. Сложность растёт с каждым верным ответом. Продержитесь как можно дольше!"
+        rules={survivalRules}
       />
-
-      <Rules items={survivalRules} />
 
       <TopicList
         topics={topics}

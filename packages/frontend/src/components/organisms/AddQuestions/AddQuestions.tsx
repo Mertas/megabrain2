@@ -12,6 +12,7 @@ import {
   type ApiCategory, type ApiTopic,
 } from '../../../lib/api'
 import styles from './AddQuestions.module.scss'
+import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 
 interface QData {
   text: string
@@ -210,7 +211,7 @@ export function AddQuestions({ categories: initialCats }: AddQuestionsProps) {
 
   return (
     <div>
-      <h1>Добавление вопросов</h1>
+      <PageHeader title="Добавление вопросов" description="Добавьте вопросы вручную или загрузите пачкой." />
 
       <Flex gap={16} wrap className={styles.sectionRow}>
         <div className={styles.topicCol}>

@@ -1,3 +1,4 @@
+@use '../../../styles/variables' as *;
 .wrap {
   margin-bottom: 24px;
 }
@@ -8,12 +9,12 @@
 }
 
 .block {
-  background: #EDEBD2;
+  background: $color-bg-light;
   border-radius: 10px;
   padding: 20px 24px;
   font-size: 14px;
   line-height: 1.7;
-  color: #182C3F;
+  color: $color-bg-dark;
   display: flex;
   flex-direction: column;
   gap: 8px;

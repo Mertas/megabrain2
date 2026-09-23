@@ -11,7 +11,7 @@ export const blitzRoute = createRoute({
     const token = localStorage.getItem('accessToken') || ''
 
     return (
-      <PageWrap activeNav="blitz" breadcrumbs={[{ label: 'Блиц-дуэль' }]}>
+      <PageWrap route="blitz">
         <Blitz categories={auth.categories} token={token} />
       </PageWrap>
     )

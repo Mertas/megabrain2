@@ -1,3 +1,4 @@
+@use '../../../styles/variables' as *;
 .wrap {
   max-width: 600px;
   margin: 0 auto;
@@ -17,13 +18,13 @@
 .title {
   font-size: 24px;
   font-weight: 700;
-  color: #182C3F;
+  color: $color-bg-dark;
   margin-bottom: 8px;
 }
 
 .subtitle {
   font-size: 15px;
-  color: #5A7184;
+  color: $color-text-soft;
   line-height: 1.5;
 }
 
@@ -35,7 +36,7 @@
 }
 
 .statCard {
-  background: #EDEBD2;
+  background: $color-bg-light;
   border-radius: 8px;
   padding: 16px;
   text-align: center;
@@ -44,17 +45,17 @@
 .statValue {
   font-size: 28px;
   font-weight: 700;
-  color: #182C3F;
+  color: $color-bg-dark;
 }
 
 .statLabel {
   font-size: 13px;
-  color: #5A7184;
+  color: $color-text-soft;
   margin-top: 4px;
 }
 
 .details {
-  background: #EDEBD2;
+  background: $color-bg-light;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 24px;
@@ -65,7 +66,7 @@
   justify-content: space-between;
   padding: 6px 0;
   font-size: 14px;
-  color: #182C3F;
+  color: $color-bg-dark;
   border-bottom: 1px solid rgba(0,0,0,0.06);
 
   &:last-child {
@@ -84,14 +85,14 @@
 }
 
 .gold {
-  color: #F9A253;
+  color: $color-primary;
   font-weight: 700;
 }
 
 .records {
   text-align: center;
   padding: 16px;
-  background: #EDEBD2;
+  background: $color-bg-light;
   border-radius: 8px;
   margin-bottom: 24px;
 }
@@ -99,13 +100,13 @@
 .recordTitle {
   font-size: 16px;
   font-weight: 700;
-  color: #182C3F;
+  color: $color-bg-dark;
   margin-bottom: 8px;
 }
 
 .recordItem {
   font-size: 14px;
-  color: #F9A253;
+  color: $color-primary;
   font-weight: 600;
   margin: 4px 0;
 }

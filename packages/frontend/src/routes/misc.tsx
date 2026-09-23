@@ -12,7 +12,7 @@ export const addQRoute = createRoute({
   component: function AddQPage() {
     const auth = useAuth()
     return (
-      <PageWrap activeNav="questions" breadcrumbs={[{ label: 'Вопросы' }, { label: 'Добавить' }]}>
+      <PageWrap route="questions">
         <AddQuestions categories={auth.categories} topics={auth.topics} />
       </PageWrap>
     )
@@ -24,8 +24,8 @@ export const adminRoute = createRoute({
   path: '/admin',
   component: function AdminPageRoute() {
     const auth = useAuth()
-    if (!auth.isAdmin) return <PageWrap activeNav="admin" breadcrumbs={[{ label: 'Доступ запрещён' }]}><Center padding={60}>Требуются права администратора</Center></PageWrap>
-    return <PageWrap activeNav="admin" breadcrumbs={[{ label: 'Админка' }]}><AdminPage /></PageWrap>
+    if (!auth.isAdmin) return <PageWrap route="admin"><Center padding={60}>Требуются права администратора</Center></PageWrap>
+    return <PageWrap route="admin"><AdminPage /></PageWrap>
   },
 })
 
@@ -33,7 +33,7 @@ export const pvpRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/pvp',
   component: function PvPPage() {
-    return <PageWrap activeNav="pvp" breadcrumbs={[{ label: 'PvP' }]}><PvP /></PageWrap>
+    return <PageWrap route="pvp"><PvP /></PageWrap>
   },
 })
 
@@ -41,6 +41,6 @@ export const ratingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/ratings',
   component: function RatingsPage() {
-    return <PageWrap activeNav="ratings" breadcrumbs={[{ label: 'Рейтинг' }]}><PvPRatings /></PageWrap>
+    return <PageWrap route="ratings"><PvPRatings /></PageWrap>
   },
 })

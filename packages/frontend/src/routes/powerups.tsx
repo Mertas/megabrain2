@@ -7,7 +7,7 @@ export const powerupsRoute = createRoute({
   path: '/powerups',
   component: function PowerupsPage() {
     return (
-      <PageWrap activeNav="powerups" breadcrumbs={[{ label: 'Power-ups' }]}>
+      <PageWrap route="powerups">
         <PowerupShop />
       </PageWrap>
     )

@@ -1,3 +1,4 @@
+@use '../../../styles/variables' as *;
 .msg {
   margin-top: 12px;
   padding: 8px;
@@ -19,13 +20,13 @@
 }
 
 .info {
-  color: #5A7184;
-  border-color: #5A7184;
+  color: $color-text-soft;
+  border-color: $color-text-soft;
   background: rgba(90, 113, 132, 0.08);
 }
 
 .warning {
-  color: #F9A253;
-  border-color: #F9A253;
+  color: $color-primary;
+  border-color: $color-primary;
   background: rgba(249, 162, 83, 0.1);
 }

@@ -28,7 +28,7 @@ export const survivalRoute = createRoute({
 
     if (!auth.isLoggedIn) {
       return (
-        <PageWrap activeNav="survival" breadcrumbs={[{ label: 'Выживание' }]}>
+        <PageWrap route="survival">
           <Center padding={60}>
             <p>Войдите, чтобы играть в режим выживания.</p>
             <Button variant="primary" size="sm" onClick={() => n({ to: '/login' })} style={{ marginTop: 12 }}>Войти</Button>
@@ -76,7 +76,7 @@ export const survivalRoute = createRoute({
 
     if (state.phase === 'playing' && state.session) {
       return (
-        <PageWrap activeNav="survival" breadcrumbs={[{ label: 'Выживание' }, { label: 'Идёт игра...' }]}>
+        <PageWrap route="survival">
           <SurvivalBoard
             sessionId={state.session.sessionId}
             initialQuestion={state.session.question}
@@ -94,7 +94,7 @@ export const survivalRoute = createRoute({
 
     if (state.phase === 'results' && state.summary) {
       return (
-        <PageWrap activeNav="survival" breadcrumbs={[{ label: 'Выживание' }, { label: 'Результаты' }]}>
+        <PageWrap route="survival">
           <SurvivalResults summary={state.summary} />
           <div style={{ textAlign: 'center', marginTop: 24, display: 'flex', gap: 12, justifyContent: 'center' }}>
             <Button variant="primary" size="sm" onClick={handlePlayAgain}>
@@ -109,7 +109,7 @@ export const survivalRoute = createRoute({
     }
 
     return (
-      <PageWrap activeNav="survival" breadcrumbs={[{ label: 'Выживание' }]}>
+      <PageWrap route="survival">
         <SurvivalSetup
           categories={auth.categories}
           bestScore={auth.user?.best_survival_score ?? 0}
@@ -127,7 +127,7 @@ export const survivalLeaderboardRoute = createRoute({
   path: '/survival/leaderboard',
   component: function SurvivalLeaderboardPage() {
     return (
-      <PageWrap activeNav="survival" breadcrumbs={[{ label: 'Выживание' }, { label: 'Лидерборд' }]}>
+      <PageWrap route="survivalLeaderboard">
         <SurvivalLeaderboard />
       </PageWrap>
     )
