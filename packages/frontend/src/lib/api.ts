@@ -308,10 +308,23 @@ export interface AdminUser {
   created_at: string
 }
 
-export async function fetchAdminQuestions(page = 1, search = '', flagged = false): Promise<AdminPageResult<AdminQuestion>> {
-  const params = new URLSearchParams({ page: String(page), limit: '50' })
-  if (search) params.set('search', search)
-  if (flagged) params.set('flagged', '1')
+export interface AdminQuestionFilters {
+  page?: number
+  limit?: number
+  search?: string
+  flagged?: boolean
+  topicId?: number
+  categoryId?: number
+  noExplanation?: boolean
+}
+
+export async function fetchAdminQuestions(f: AdminQuestionFilters = {}): Promise<AdminPageResult<AdminQuestion>> {
+  const params = new URLSearchParams({ page: String(f.page ?? 1), limit: String(f.limit ?? 20) })
+  if (f.search) params.set('search', f.search)
+  if (f.flagged) params.set('flagged', '1')
+  if (f.topicId) params.set('topic_id', String(f.topicId))
+  if (f.categoryId) params.set('category_id', String(f.categoryId))
+  if (f.noExplanation) params.set('no_explanation', '1')
   return request(`/admin/questions?${params}`)
 }
 
@@ -319,7 +332,7 @@ export async function fetchAdminQuestion(id: number): Promise<AdminQuestion> {
   return request(`/admin/questions/${id}`)
 }
 
-export async function updateAdminQuestion(id: number, data: Partial<AdminQuestion>): Promise<void> {
+export async function updateAdminQuestion(id: number, data: Partial<AdminQuestion>): Promise<{ ok: boolean; question: AdminQuestion | null }> {
   return request(`/admin/questions/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 }
 
@@ -359,8 +372,8 @@ export async function deleteAdminTopic(id: number): Promise<void> {
   return request(`/admin/topics/${id}`, { method: 'DELETE' })
 }
 
-export async function fetchAdminUsers(page = 1, search = ''): Promise<AdminPageResult<AdminUser>> {
-  const params = new URLSearchParams({ page: String(page), limit: '50' })
+export async function fetchAdminUsers(page = 1, search = '', limit = 50): Promise<AdminPageResult<AdminUser>> {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) })
   if (search) params.set('search', search)
   return request(`/admin/users?${params}`)
 }

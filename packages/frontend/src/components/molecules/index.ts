@@ -51,3 +51,6 @@ export type { SearchCheckProps } from './SearchCheck'
 
 export { TimeEstimator } from './TimeEstimator'
 export type { TimeEstimatorProps } from './TimeEstimator'
+
+export { Paginator } from './Paginator'
+export type { PaginatorProps } from './Paginator'

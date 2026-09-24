@@ -1,0 +1,38 @@
+@use '../../../styles/variables' as *;
+
+.paginator {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 12px 0;
+}
+
+.range {
+  font-size: $font-size-sm;
+  color: $color-text-soft;
+  white-space: nowrap;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.gap {
+  color: $color-text-soft;
+  font-size: $font-size-md;
+  padding: 0 2px;
+  user-select: none;
+}
+
+.size {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: $font-size-sm;
+  color: $color-text-soft;
+  white-space: nowrap;
+}

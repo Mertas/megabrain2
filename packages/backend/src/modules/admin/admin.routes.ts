@@ -10,10 +10,13 @@ adminRouter.use(authenticate, adminOnly)
 // ========== QUESTIONS ==========
 
 adminRouter.get('/questions', (req, res) => {
-  const page = parseInt(req.query.page as string) || 1
-  const limit = parseInt(req.query.limit as string) || 50
+  const page = Math.max(1, parseInt(req.query.page as string) || 1)
+  const limit = Math.min(200, Math.max(1, parseInt(req.query.limit as string) || 50))
   const search = (req.query.search as string) || ''
   const flagged = req.query.flagged as string
+  const topicId = parseInt(req.query.topic_id as string) || 0
+  const categoryId = parseInt(req.query.category_id as string) || 0
+  const noExplanation = req.query.no_explanation as string
   const offset = (page - 1) * limit
 
   let where = ''
@@ -21,13 +24,27 @@ adminRouter.get('/questions', (req, res) => {
   const conditions: string[] = []
   
   if (search) {
-    conditions.push('(q.text LIKE ? OR q.answer_1 LIKE ? OR q.answer_2 LIKE ? OR q.answer_3 LIKE ? OR q.answer_4 LIKE ? OR q.note LIKE ? OR t.name LIKE ? OR c.name LIKE ?)')
+    conditions.push('(q.text LIKE ? OR q.answer_1 LIKE ? OR q.answer_2 LIKE ? OR q.answer_3 LIKE ? OR q.answer_4 LIKE ? OR q.explanation LIKE ? OR q.note LIKE ? OR t.name LIKE ? OR c.name LIKE ?)')
     const s = `%${search}%`
-    params.push(s, s, s, s, s, s, s, s)
+    params.push(s, s, s, s, s, s, s, s, s)
   }
   
   if (flagged === '1') {
     conditions.push('q.flagged = 1')
+  }
+
+  if (topicId) {
+    conditions.push('q.topic_id = ?')
+    params.push(topicId)
+  }
+
+  if (categoryId) {
+    conditions.push('c.id = ?')
+    params.push(categoryId)
+  }
+
+  if (noExplanation === '1') {
+    conditions.push("(q.explanation IS NULL OR TRIM(q.explanation) = '')")
   }
   
   if (conditions.length > 0) {
@@ -74,19 +91,41 @@ adminRouter.get('/questions/:id', (req, res) => {
 })
 
 adminRouter.put('/questions/:id', (req, res) => {
-  const { text, answer_1, answer_2, answer_3, answer_4, correct_index, explanation, note, topic_id, flagged } = req.body
-  if (!text) { res.status(400).json({ error: 'INVALID', message: 'text обязателен' }); return }
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const fields = ['text', 'answer_1', 'answer_2', 'answer_3', 'answer_4', 'correct_index', 'explanation', 'note', 'image_url', 'flagged', 'topic_id'] as const
 
-  const setClauses: string[] = ['text=?', 'answer_1=?', 'answer_2=?', 'answer_3=?', 'answer_4=?', 'correct_index=?', 'explanation=?', 'note=?']
-  const params: unknown[] = [text, answer_1 || '', answer_2 || '', answer_3 || '', answer_4 || '', correct_index ?? 0, explanation || null, note || null]
+  const sets: string[] = []
+  const params: unknown[] = []
 
-  if (topic_id !== undefined) { setClauses.push('topic_id=?'); params.push(topic_id) }
-  if (flagged !== undefined) { setClauses.push('flagged=?'); params.push(flagged) }
+  for (const f of fields) {
+    if (body[f] === undefined) continue
+    let v = body[f]
+    if (f === 'text') {
+      if (!String(v).trim()) { res.status(400).json({ error: 'INVALID', message: 'text не может быть пустым' }); return }
+      v = String(v)
+    }
+    if (f === 'correct_index') v = Math.min(3, Math.max(0, Number(v) || 0))
+    if (f === 'flagged') v = v ? 1 : 0
+    sets.push(`${f}=?`)
+    params.push(v)
+  }
+
+  if (sets.length === 0) { res.status(400).json({ error: 'INVALID', message: 'нет полей для обновления' }); return }
 
   params.push(req.params.id)
-  db.prepare(`UPDATE questions SET ${setClauses.join(', ')} WHERE id=?`).run(...params)
+  db.prepare(`UPDATE questions SET ${sets.join(', ')} WHERE id=?`).run(...params)
 
-  res.json({ ok: true })
+  const row = db.prepare(
+    `SELECT q.id, q.text, q.answer_1, q.answer_2, q.answer_3, q.answer_4, q.correct_index, q.explanation, q.note, q.image_url, q.flagged,
+            t.id as topic_id, t.name as topic_name,
+            c.id as category_id, c.name as category_name
+     FROM questions q
+     JOIN topics t ON t.id = q.topic_id
+     JOIN categories c ON c.id = t.category_id
+     WHERE q.id = ?`,
+  ).get(req.params.id)
+
+  res.json({ ok: true, question: row ?? null })
 })
 
 adminRouter.delete('/questions/:id', (req, res) => {

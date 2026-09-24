@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
-import { createPortal } from 'react-dom'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Table, type TableColumn } from '../../molecules/Table/Table'
 import { Tabs } from '../../molecules/Tabs/Tabs'
+import { Paginator } from '../../molecules/Paginator/Paginator'
 import { Button } from '../../atoms/Button/Button'
 import { Input } from '../../atoms/Input/Input'
+import { Select } from '../../atoms/Select/Select'
 import { SearchForm } from '../../molecules/SearchForm/SearchForm'
 import { Spinner } from '../../atoms/Spinner/Spinner'
 import {
@@ -17,6 +18,8 @@ import styles from './AdminPage.module.scss'
 import { PageHeader } from '../../molecules/PageHeader/PageHeader'
 
 type Tab = 'questions' | 'categories' | 'users'
+
+const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(' ')
 
 export function AdminPage() {
   const [tab, setTab] = useState<Tab>('questions')
@@ -44,110 +47,364 @@ export function AdminPage() {
 
 // ===================== Questions Tab =====================
 
+type Draft = Partial<AdminQuestion>
+type RowState = 'saving' | 'saved' | 'error'
+
+const EDITABLE: (keyof AdminQuestion)[] = ['text', 'answer_1', 'answer_2', 'answer_3', 'answer_4', 'correct_index', 'explanation', 'note']
+
+function changedFields(q: AdminQuestion, draft: Draft): Draft {
+  const out: Draft = {}
+  for (const key of EDITABLE) {
+    const next = draft[key]
+    if (next === undefined) continue
+    const cur = q[key]
+    const a = next == null ? '' : String(next)
+    const b = cur == null ? '' : String(cur)
+    if (a !== b) (out as Record<string, unknown>)[key] = next
+  }
+  return out
+}
+
 function QuestionsTab() {
   const [data, setData] = useState<AdminPageResult<AdminQuestion> | null>(null)
+  const [cats, setCats] = useState<AdminCategory[]>([])
+  const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const [topicId, setTopicId] = useState('')
   const [flaggedOnly, setFlaggedOnly] = useState(false)
+  const [noExplanation, setNoExplanation] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [loading, setLoading] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editForm, setEditForm] = useState<Partial<AdminQuestion>>({})
+  const [drafts, setDrafts] = useState<Record<number, Draft>>({})
+  const [rowState, setRowState] = useState<Record<number, RowState>>({})
+  const [savingAll, setSavingAll] = useState(false)
+  const flashTimers = useRef<Record<number, number>>({})
+
+  // поиск с задержкой, чтобы не дёргать сервер на каждую букву
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      setSearch(searchInput.trim())
+      setPage(1)
+    }, 300)
+    return () => window.clearTimeout(t)
+  }, [searchInput])
+
+  useEffect(() => { fetchAdminCategories().then(setCats).catch(() => setCats([])) }, [])
 
   const load = useCallback(async () => {
     setLoading(true)
-    const r = await fetchAdminQuestions(page, search, flaggedOnly)
-    setData(r)
-    setLoading(false)
-  }, [page, search, flaggedOnly])
+    try {
+      const r = await fetchAdminQuestions({
+        page, limit: pageSize, search,
+        flagged: flaggedOnly, topicId: topicId ? Number(topicId) : undefined, noExplanation,
+      })
+      setData(r)
+    } finally {
+      setLoading(false)
+    }
+  }, [page, pageSize, search, flaggedOnly, topicId, noExplanation])
 
   useEffect(() => { load() }, [load])
 
-  const handleEdit = (q: AdminQuestion) => {
-    setEditingId(q.id)
-    setEditForm({ text: q.text, answer_1: q.answer_1, answer_2: q.answer_2, answer_3: q.answer_3, answer_4: q.answer_4, correct_index: q.correct_index, explanation: q.explanation || '', note: q.note || '' })
+  const topicOptions = useMemo(
+    () => cats.flatMap((c) => c.topics.map((t) => ({
+      value: String(t.id),
+      label: `${c.icon} ${c.name} / ${t.name} (${t.question_count})`,
+    }))),
+    [cats],
+  )
+
+  const dirtyIds = useMemo(() => {
+    if (!data) return []
+    return data.items.map((q) => q.id).filter((id) => {
+      const q = data.items.find((x) => x.id === id)
+      return q ? Object.keys(changedFields(q, drafts[id] || {})).length > 0 : false
+    })
+  }, [data, drafts])
+
+  const allDirtyCount = useMemo(() => Object.keys(drafts).filter((id) => {
+    const q = data?.items.find((x) => x.id === Number(id))
+    const draft = drafts[Number(id)] || {}
+    if (!q) return Object.values(draft).some((v) => v !== undefined)
+    return Object.keys(changedFields(q, draft)).length > 0
+  }).length, [drafts, data])
+
+  const setField = (id: number, patch: Draft) => {
+    setDrafts((d) => ({ ...d, [id]: { ...d[id], ...patch } }))
+    setRowState((s) => ({ ...s, [id]: undefined as unknown as RowState }))
   }
 
-  const handleSave = async () => {
-    if (editingId == null) return
-    await updateAdminQuestion(editingId, editForm)
-    setEditingId(null)
-    load()
+  const flash = (id: number, state: RowState) => {
+    setRowState((s) => ({ ...s, [id]: state }))
+    window.clearTimeout(flashTimers.current[id])
+    if (state !== 'saving') {
+      flashTimers.current[id] = window.setTimeout(() => setRowState((s) => ({ ...s, [id]: undefined as unknown as RowState })), 1800)
+    }
+  }
+
+  const applySaved = (id: number, saved: AdminQuestion) => {
+    setData((d) => d ? { ...d, items: d.items.map((x) => x.id === id ? saved : x) } : d)
+    setDrafts((dr) => { const n = { ...dr }; delete n[id]; return n })
+  }
+
+  const saveRow = async (id: number): Promise<boolean> => {
+    const q = data?.items.find((x) => x.id === id)
+    if (!q) return false
+    const patch = changedFields(q, drafts[id] || {})
+    if (Object.keys(patch).length === 0) return true
+    flash(id, 'saving')
+    try {
+      const res = await updateAdminQuestion(id, patch)
+      if (res.question) applySaved(id, res.question)
+      flash(id, 'saved')
+      return true
+    } catch {
+      flash(id, 'error')
+      return false
+    }
+  }
+
+  const saveAll = async () => {
+    const ids = Object.keys(drafts).map(Number).filter((id) => {
+      const q = data?.items.find((x) => x.id === id)
+      return q ? Object.keys(changedFields(q, drafts[id] || {})).length > 0 : false
+    })
+    if (ids.length === 0) return
+    setSavingAll(true)
+    for (const id of ids) {
+      // eslint-disable-next-line no-await-in-loop
+      await saveRow(id)
+    }
+    setSavingAll(false)
+  }
+
+  const resetRow = (id: number) => {
+    setDrafts((d) => { const n = { ...d }; delete n[id]; return n })
+    setRowState((s) => ({ ...s, [id]: undefined as unknown as RowState }))
+  }
+
+  const toggleFlag = async (q: AdminQuestion) => {
+    const flagged = q.flagged ? 0 : 1
+    setData((d) => d ? { ...d, items: d.items.map((x) => x.id === q.id ? { ...x, flagged } : x) } : d)
+    try {
+      await updateAdminQuestion(q.id, { flagged })
+    } catch {
+      setData((d) => d ? { ...d, items: d.items.map((x) => x.id === q.id ? { ...x, flagged: q.flagged } : x) } : d)
+    }
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Удалить вопрос?')) return
+    if (!confirm(`Удалить вопрос #${id}?`)) return
     await deleteAdminQuestion(id)
+    resetRow(id)
     load()
   }
 
-  const columns: TableColumn<AdminQuestion>[] = [
-    { key: 'id', label: 'ID', width: '50px' },
-    { key: 'text', label: 'Текст', render: (q) => <div className={styles.textCell}>{q.text}{q.flagged ? ' \u{1F6A9}' : ''}</div> },
-    { key: 'topic_name', label: 'Тема' },
-    { key: 'category_name', label: 'Категория' },
-    {
-      key: 'actions', label: '', width: '100px',
-      render: (q) => (
-        <span className={styles.actions}>
-          <Button variant="link" size="sm" onClick={() => handleEdit(q)}>ред</Button>
-          <Button variant="link" size="sm" onClick={() => handleDelete(q.id)}>удл</Button>
-        </span>
-      ),
-    },
-  ]
+  const resetFilters = () => {
+    setSearchInput(''); setSearch(''); setTopicId(''); setFlaggedOnly(false); setNoExplanation(false); setPage(1)
+  }
+
+  const hasFilters = Boolean(searchInput || topicId || flaggedOnly || noExplanation)
+  const total = data?.total ?? 0
+  const pages = data?.pages ?? 1
 
   return (
     <div>
-      <SearchForm value={search} onChange={(v) => { setSearch(v); setPage(1) }} />
-      <label className={styles.flaggedFilter}>
-        <input type="checkbox" checked={flaggedOnly} onChange={(e) => { setFlaggedOnly(e.target.checked); setPage(1) }} />
-        {' '}Только отмеченные 🚩
-      </label>
-      <Table columns={columns} data={data?.items || []} rowKey={(q) => q.id} loading={loading} />
-      {data && data.pages > 1 && (
-        <div className={styles.pagination}>
-          {Array.from({ length: data.pages }, (_, i) => (
-            <Button key={i} variant={page === i + 1 ? 'primary' : 'ghost'} size="sm" onClick={() => setPage(i + 1)}>
-              {i + 1}
-            </Button>
-          ))}
+      <div className={styles.filters}>
+        <div className={styles.filterRow}>
+          <Input
+            className={styles.searchInput}
+            size="sm"
+            placeholder="Поиск: вопрос, ответ, пояснение, тема…"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            fullWidth
+          />
+          <Select
+            className={styles.topicSelect}
+            size="sm"
+            value={topicId}
+            onChange={(e) => { setTopicId(e.target.value); setPage(1) }}
+            options={[{ value: '', label: 'Все темы' }, ...topicOptions]}
+          />
+          <label className={styles.check}>
+            <input type="checkbox" checked={flaggedOnly} onChange={(e) => { setFlaggedOnly(e.target.checked); setPage(1) }} />
+            🚩 отмеченные
+          </label>
+          <label className={styles.check}>
+            <input type="checkbox" checked={noExplanation} onChange={(e) => { setNoExplanation(e.target.checked); setPage(1) }} />
+            без пояснения
+          </label>
+          {hasFilters && (
+            <Button variant="ghost" size="sm" onClick={resetFilters}>Сбросить</Button>
+          )}
         </div>
+
+        <div className={styles.statsRow}>
+          <span className={styles.stats}>Найдено: <b>{loading ? '…' : total}</b></span>
+          {allDirtyCount > 0 && <span className={styles.dirtyNote}>изменено: {allDirtyCount}</span>}
+          {allDirtyCount > 0 && (
+            <Button variant="primary" size="sm" disabled={savingAll} onClick={saveAll}>
+              {savingAll ? 'Сохраняю…' : `Сохранить всё (${allDirtyCount})`}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <Paginator
+        page={page} pages={pages} total={total} pageSize={pageSize}
+        onPageChange={setPage} onPageSizeChange={(n) => { setPageSize(n); setPage(1) }}
+      />
+
+      {loading && !data && <div className={styles.loader}><Spinner size="md" /></div>}
+      {!loading && data && data.items.length === 0 && (
+        <p className={styles.empty}>Ничего не найдено — попробуй изменить фильтры.</p>
       )}
 
-      {editingId != null && createPortal(
-        <div className={styles.editOverlay}>
-          <div className={styles.editPanel}>
-            <h3>Редактировать вопрос #{editingId}</h3>
-            <EditField label="Текст" value={editForm.text || ''} onChange={(v) => setEditForm((f) => ({ ...f, text: v }))} textarea />
-            <EditField label="Ответ 1" value={editForm.answer_1 || ''} onChange={(v) => setEditForm((f) => ({ ...f, answer_1: v }))} />
-            <EditField label="Ответ 2" value={editForm.answer_2 || ''} onChange={(v) => setEditForm((f) => ({ ...f, answer_2: v }))} />
-            <EditField label="Ответ 3" value={editForm.answer_3 || ''} onChange={(v) => setEditForm((f) => ({ ...f, answer_3: v }))} />
-            <EditField label="Ответ 4" value={editForm.answer_4 || ''} onChange={(v) => setEditForm((f) => ({ ...f, answer_4: v }))} />
-            <EditField label="Верный индекс (0-3)" value={String(editForm.correct_index ?? 0)} onChange={(v) => setEditForm((f) => ({ ...f, correct_index: parseInt(v) || 0 }))} />
-            <EditField label="Пояснение" value={editForm.explanation || ''} onChange={(v) => setEditForm((f) => ({ ...f, explanation: v }))} textarea />
-            <EditField label="Комментарий" value={editForm.note || ''} onChange={(v) => setEditForm((f) => ({ ...f, note: v }))} textarea />
-            <div className={styles.editActions}>
-              <Button variant="primary" size="sm" onClick={handleSave}>Сохранить</Button>
-              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>Отмена</Button>
-            </div>
-          </div>
-        </div>,
-        document.body,
+      <div className={styles.cards}>
+        {data?.items.map((q) => (
+          <QuestionCard
+            key={q.id}
+            q={q}
+            draft={drafts[q.id] || {}}
+            state={rowState[q.id]}
+            dirty={dirtyIds.includes(q.id)}
+            onField={setField}
+            onSave={saveRow}
+            onReset={resetRow}
+            onDelete={handleDelete}
+            onToggleFlag={toggleFlag}
+          />
+        ))}
+      </div>
+
+      {pages > 1 && (
+        <Paginator
+          page={page} pages={pages} total={total} pageSize={pageSize}
+          onPageChange={setPage} onPageSizeChange={(n) => { setPageSize(n); setPage(1) }}
+        />
       )}
     </div>
   )
 }
 
-function EditField({ label, value, onChange, textarea }: { label: string; value: string; onChange: (v: string) => void; textarea?: boolean }) {
+// ---------- карточка вопроса ----------
+
+interface QuestionCardProps {
+  q: AdminQuestion
+  draft: Draft
+  state?: RowState
+  dirty: boolean
+  onField: (id: number, patch: Draft) => void
+  onSave: (id: number) => void
+  onReset: (id: number) => void
+  onDelete: (id: number) => void
+  onToggleFlag: (q: AdminQuestion) => void
+}
+
+function QuestionCard({ q, draft, state, dirty, onField, onSave, onReset, onDelete, onToggleFlag }: QuestionCardProps) {
+  const value = <K extends keyof AdminQuestion>(key: K): string => {
+    const v = draft[key] !== undefined ? draft[key] : q[key]
+    return v == null ? '' : String(v)
+  }
+  const correct = draft.correct_index !== undefined ? Number(draft.correct_index) : q.correct_index
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); onSave(q.id) }
+    else if (e.key === 'Escape' && dirty) { e.preventDefault(); onReset(q.id) }
+  }
+
+  const explanationEmpty = value('explanation').trim() === ''
+
   return (
-    <label className={styles.editField}>
-      <span className={styles.editLabel}>{label}</span>
-      {textarea ? (
-        <textarea className={styles.editTextarea} value={value} onChange={(e) => onChange(e.target.value)} rows={3} />
-      ) : (
-        <Input value={value} onChange={(e) => onChange(e.target.value)} fullWidth />
-      )}
-    </label>
+    <article className={cx(styles.card, dirty && styles.cardDirty)}>
+      <div className={styles.cardHead}>
+        <span className={styles.qid}>#{q.id}</span>
+        <span className={styles.qmeta} title={`${q.category_name} / ${q.topic_name}`}>
+          {q.category_name} · {q.topic_name}
+        </span>
+        <button
+          type="button"
+          className={cx(styles.flagBtn, q.flagged ? styles.flagOn : '')}
+          onClick={() => onToggleFlag(q)}
+          title={q.flagged ? 'Снять отметку' : 'Отметить вопрос'}
+        >
+          🚩
+        </button>
+        <span className={styles.spacer} />
+        {dirty && <span className={styles.stateDirty}>изменено</span>}
+        {state === 'saving' && <span className={styles.stateSaving}>сохраняю…</span>}
+        {state === 'saved' && <span className={styles.stateSaved}>сохранено ✓</span>}
+        {state === 'error' && <span className={styles.stateError}>не сохранилось</span>}
+        <Button size="sm" variant={dirty ? 'primary' : 'ghost'} disabled={!dirty || state === 'saving'} onClick={() => onSave(q.id)}>
+          Сохранить
+        </Button>
+        <Button size="sm" variant="ghost" disabled={!dirty} onClick={() => onReset(q.id)}>Вернуть</Button>
+        <Button size="sm" variant="link" onClick={() => onDelete(q.id)}>удалить</Button>
+      </div>
+
+      <label className={styles.field}>
+        <span className={styles.fieldLabel}>Вопрос</span>
+        <textarea
+          className={styles.textarea}
+          rows={2}
+          value={value('text')}
+          onChange={(e) => onField(q.id, { text: e.target.value })}
+          onKeyDown={onKeyDown}
+        />
+      </label>
+
+      <div className={styles.answers}>
+        {([0, 1, 2, 3] as const).map((i) => {
+          const key = `answer_${i + 1}` as keyof AdminQuestion
+          const isCorrect = correct === i
+          return (
+            <label key={i} className={cx(styles.answer, isCorrect && styles.answerCorrect)}>
+              <input
+                type="radio"
+                name={`correct-${q.id}`}
+                checked={isCorrect}
+                onChange={() => onField(q.id, { correct_index: i })}
+                title="Правильный ответ"
+              />
+              <Input
+                size="sm"
+                fullWidth
+                value={value(key)}
+                onChange={(e) => onField(q.id, { [key]: e.target.value } as Draft)}
+                onKeyDown={onKeyDown}
+              />
+            </label>
+          )
+        })}
+      </div>
+
+      <div className={styles.row2}>
+        <label className={styles.field}>
+          <span className={styles.fieldLabel}>
+            Пояснение {explanationEmpty && <em className={styles.warn}>— пусто</em>}
+          </span>
+          <textarea
+            className={styles.textarea}
+            rows={2}
+            value={value('explanation')}
+            onChange={(e) => onField(q.id, { explanation: e.target.value })}
+            onKeyDown={onKeyDown}
+          />
+        </label>
+        <label className={styles.field}>
+          <span className={styles.fieldLabel}>Заметка</span>
+          <textarea
+            className={styles.textarea}
+            rows={2}
+            value={value('note')}
+            onChange={(e) => onField(q.id, { note: e.target.value })}
+            onKeyDown={onKeyDown}
+          />
+        </label>
+      </div>
+    </article>
   )
 }
 
@@ -239,13 +496,14 @@ function UsersTab() {
   const [data, setData] = useState<AdminPageResult<AdminUser> | null>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [loading, setLoading] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
-    setData(await fetchAdminUsers(page, search))
+    setData(await fetchAdminUsers(page, search, pageSize))
     setLoading(false)
-  }, [page, search])
+  }, [page, search, pageSize])
 
   useEffect(() => { load() }, [load])
 
@@ -278,15 +536,10 @@ function UsersTab() {
     <div>
       <SearchForm value={search} onChange={(v) => { setSearch(v); setPage(1) }} />
       <Table columns={columns} data={data?.items || []} rowKey={(u) => u.id} loading={loading} />
-      {data && data.pages > 1 && (
-        <div className={styles.pagination}>
-          {Array.from({ length: data.pages }, (_, i) => (
-            <Button key={i} variant={page === i + 1 ? 'primary' : 'ghost'} size="sm" onClick={() => setPage(i + 1)}>
-              {i + 1}
-            </Button>
-          ))}
-        </div>
-      )}
+      <Paginator
+        page={page} pages={data?.pages ?? 1} total={data?.total} pageSize={pageSize}
+        onPageChange={setPage} onPageSizeChange={(n) => { setPageSize(n); setPage(1) }}
+      />
     </div>
   )
 }

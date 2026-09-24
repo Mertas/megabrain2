@@ -9,85 +9,193 @@
   margin-top: 16px;
 }
 
-.textCell {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* ---------- фильтры ---------- */
 
-.actions {
+.filters {
   display: flex;
+  flex-direction: column;
   gap: 4px;
+  background: $color-bg-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  padding: 10px 12px;
+  margin-bottom: 4px;
 }
 
-.flaggedFilter {
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.searchInput {
+  flex: 1 1 260px;
+  min-width: 200px;
+}
+
+.topicSelect {
+  flex: 1 1 240px;
+  max-width: 380px;
+}
+
+.check {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: $font-size-sm;
-  color: #666;
-  margin: 8px 0;
+  color: $color-text-soft;
   cursor: pointer;
+  white-space: nowrap;
 
   input {
     cursor: pointer;
   }
 }
 
-.pagination {
+.statsRow {
   display: flex;
-  gap: 4px;
-  justify-content: center;
-  margin-top: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  min-height: 26px;
 }
 
-.editOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 40px;
-  z-index: 200;
-  overflow-y: auto;
+.stats {
+  font-size: $font-size-sm;
+  color: $color-text-soft;
 }
 
-.editPanel {
+.dirtyNote {
+  font-size: $font-size-sm;
+  color: $color-accent;
+  font-weight: 700;
+}
+
+/* ---------- карточки вопросов ---------- */
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.card {
   background: $color-bg-white;
-  border-radius: 10px;
-  padding: 24px;
-  width: 560px;
-  max-width: calc(100vw - 32px);
-  margin-bottom: 40px;
+  border: 1px solid $color-border;
+  border-left: 3px solid $color-border;
+  border-radius: $radius-sm;
+  padding: 10px 12px;
 
-  h3 {
-    font-size: 19px;
-    margin: 0 0 16px;
+  &:focus-within {
+    border-color: $color-primary;
   }
 }
 
-.editField {
+.cardDirty {
+  border-left-color: $color-accent;
+  box-shadow: 0 0 0 1px rgba(255, 102, 51, 0.25);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.qid {
+  font-size: $font-size-sm;
+  font-weight: 700;
+  color: $color-text-dark;
+  background: $color-bg-light;
+  border-radius: $radius-sm;
+  padding: 2px 6px;
+}
+
+.qmeta {
+  font-size: $font-size-sm;
+  color: $color-text-soft;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 42ch;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.flagBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.25;
+  padding: 2px;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.flagOn {
+  opacity: 1;
+}
+
+.stateSaving {
+  font-size: $font-size-sm;
+  color: $color-text-soft;
+}
+
+.stateDirty {
+  font-size: $font-size-sm;
+  color: $color-accent;
+  font-weight: 700;
+}
+
+.stateSaved {
+  font-size: $font-size-sm;
+  color: $color-success;
+}
+
+.stateError {
+  font-size: $font-size-sm;
+  color: $color-accent;
+  font-weight: 700;
+}
+
+.field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
+  gap: 3px;
+  margin-bottom: 6px;
 }
 
-.editLabel {
-  font-size: 10px;
-  color: #666;
+.fieldLabel {
+  font-size: $font-size-sm;
+  color: $color-text-soft;
 }
 
-.editTextarea {
+.warn {
+  color: $color-accent;
+  font-style: normal;
+}
+
+.textarea {
   font-family: $font-family;
-  font-size: 12px;
+  font-size: $font-size-md;
+  color: $color-text;
   border: 1px solid $color-border;
   border-radius: 4px;
   padding: 6px 10px;
   resize: vertical;
   width: 100%;
+  box-sizing: border-box;
+  line-height: 1.35;
 
   &:focus {
     border-color: $color-primary;
@@ -95,11 +203,53 @@
   }
 }
 
-.editActions {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
+.answers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 12px;
+  margin-bottom: 6px;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
 }
+
+.answer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+
+  input[type='radio'] {
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+}
+
+.answerCorrect {
+  background: rgba(55, 206, 116, 0.12);
+  border-color: rgba(55, 206, 116, 0.5);
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 6px 12px;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.empty {
+  color: $color-text-soft;
+  font-size: $font-size-md;
+  padding: 16px 4px;
+}
+
+/* ---------- категории ---------- */
 
 .catCard {
   background: $color-bg-white;
