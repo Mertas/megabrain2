@@ -60,26 +60,35 @@ export function NewQuestionForm({ topics: _topics, onSubmit }: NewQuestionFormPr
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Вопрос, сформулированный точно, кратко и недвусмысленно*"
-          rows={4}
+          autoResize
+          minRows={4}
+          maxRows={18}
           size="lg"
+          fullWidth
         />
         <FieldNote>*в разумных пределах, конечно ;)</FieldNote>
       </div>
 
       <div className={styles.answers}>
         {answers.map((a, i) => (
-          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
             <span style={{ fontSize: 19, width: 24 }}>{i + 1}.</span>
-            <Input
-              value={a}
-              onChange={(e) => {
-                const next = [...answers] as [string, string, string, string]
-                next[i] = e.target.value
-                setAnswers(next)
-              }}
-              placeholder={['Смешной ответ', 'Верный ответ', 'Очевидный ответ', 'Раздражающий ответ'][i]}
-              style={{ flex: 1 }}
-            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Textarea
+                value={a}
+                onChange={(e) => {
+                  const next = [...answers] as [string, string, string, string]
+                  next[i] = e.target.value.replace(/\n+/g, ' ')
+                  setAnswers(next)
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) e.preventDefault() }}
+                placeholder={['Смешной ответ', 'Верный ответ', 'Очевидный ответ', 'Раздражающий ответ'][i]}
+                autoResize
+                minRows={1}
+                maxRows={8}
+                fullWidth
+              />
+            </div>
             <Button
               variant={correctIndex === i ? 'primary' : 'ghost'}
               size="sm"

@@ -5,6 +5,7 @@ import { Paginator } from '../../molecules/Paginator/Paginator'
 import { Button } from '../../atoms/Button/Button'
 import { Input } from '../../atoms/Input/Input'
 import { Select } from '../../atoms/Select/Select'
+import { Textarea } from '../../atoms/Textarea/Textarea'
 import { SearchForm } from '../../molecules/SearchForm/SearchForm'
 import { Spinner } from '../../atoms/Spinner/Spinner'
 import {
@@ -213,21 +214,24 @@ function QuestionsTab() {
     <div>
       <div className={styles.filters}>
         <div className={styles.filterRow}>
-          <Input
-            className={styles.searchInput}
-            size="sm"
-            placeholder="Поиск: вопрос, ответ, пояснение, тема…"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            fullWidth
-          />
-          <Select
-            className={styles.topicSelect}
-            size="sm"
-            value={topicId}
-            onChange={(e) => { setTopicId(e.target.value); setPage(1) }}
-            options={[{ value: '', label: 'Все темы' }, ...topicOptions]}
-          />
+          <div className={styles.searchWrap}>
+            <Input
+              size="sm"
+              fullWidth
+              placeholder="Поиск: вопрос, ответ, пояснение, тема…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </div>
+          <div className={styles.topicWrap}>
+            <Select
+              size="sm"
+              fullWidth
+              value={topicId}
+              onChange={(e) => { setTopicId(e.target.value); setPage(1) }}
+              options={[{ value: '', label: 'Все темы' }, ...topicOptions]}
+            />
+          </div>
           <label className={styles.check}>
             <input type="checkbox" checked={flaggedOnly} onChange={(e) => { setFlaggedOnly(e.target.checked); setPage(1) }} />
             🚩 отмеченные
@@ -315,6 +319,12 @@ function QuestionCard({ q, draft, state, dirty, onField, onSave, onReset, onDele
     else if (e.key === 'Escape' && dirty) { e.preventDefault(); onReset(q.id) }
   }
 
+  // ответы — однострочные по смыслу: Enter не переносит строку, а сохраняет карточку
+  const onAnswerKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); onSave(q.id) }
+    else onKeyDown(e)
+  }
+
   const explanationEmpty = value('explanation').trim() === ''
 
   return (
@@ -344,16 +354,19 @@ function QuestionCard({ q, draft, state, dirty, onField, onSave, onReset, onDele
         <Button size="sm" variant="link" onClick={() => onDelete(q.id)}>удалить</Button>
       </div>
 
-      <label className={styles.field}>
+      <div className={styles.field}>
         <span className={styles.fieldLabel}>Вопрос</span>
-        <textarea
-          className={styles.textarea}
-          rows={2}
+        <Textarea
+          autoResize
+          minRows={2}
+          maxRows={18}
+          fullWidth
+          size="sm"
           value={value('text')}
           onChange={(e) => onField(q.id, { text: e.target.value })}
           onKeyDown={onKeyDown}
         />
-      </label>
+      </div>
 
       <div className={styles.answers}>
         {([0, 1, 2, 3] as const).map((i) => {
@@ -368,12 +381,15 @@ function QuestionCard({ q, draft, state, dirty, onField, onSave, onReset, onDele
                 onChange={() => onField(q.id, { correct_index: i })}
                 title="Правильный ответ"
               />
-              <Input
-                size="sm"
+              <Textarea
+                autoResize
+                minRows={1}
+                maxRows={8}
                 fullWidth
+                size="sm"
                 value={value(key)}
-                onChange={(e) => onField(q.id, { [key]: e.target.value } as Draft)}
-                onKeyDown={onKeyDown}
+                onChange={(e) => onField(q.id, { [key]: e.target.value.replace(/\n+/g, ' ') } as Draft)}
+                onKeyDown={onAnswerKeyDown}
               />
             </label>
           )
@@ -381,28 +397,34 @@ function QuestionCard({ q, draft, state, dirty, onField, onSave, onReset, onDele
       </div>
 
       <div className={styles.row2}>
-        <label className={styles.field}>
+        <div className={styles.field}>
           <span className={styles.fieldLabel}>
             Пояснение {explanationEmpty && <em className={styles.warn}>— пусто</em>}
           </span>
-          <textarea
-            className={styles.textarea}
-            rows={2}
+          <Textarea
+            autoResize
+            minRows={2}
+            maxRows={14}
+            fullWidth
+            size="sm"
             value={value('explanation')}
             onChange={(e) => onField(q.id, { explanation: e.target.value })}
             onKeyDown={onKeyDown}
           />
-        </label>
-        <label className={styles.field}>
+        </div>
+        <div className={styles.field}>
           <span className={styles.fieldLabel}>Заметка</span>
-          <textarea
-            className={styles.textarea}
-            rows={2}
+          <Textarea
+            autoResize
+            minRows={2}
+            maxRows={14}
+            fullWidth
+            size="sm"
             value={value('note')}
             onChange={(e) => onField(q.id, { note: e.target.value })}
             onKeyDown={onKeyDown}
           />
-        </label>
+        </div>
       </div>
     </article>
   )
